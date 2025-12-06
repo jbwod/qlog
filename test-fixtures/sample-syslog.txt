@@ -1,0 +1,28 @@
+# Sample Meraki Syslog Messages for Testing
+# These are example messages that qlog should be able to parse
+
+# URL messages
+<134>Jan 15 10:30:45 MX60 urls src=192.168.1.100:54321 dst=93.184.216.34 request: GET http://www.meraki.com
+<134>Jan 15 10:31:12 MR42 wireless_urls src=192.168.1.50:45678 dst=8.8.8.8 request: GET https://www.google.com/search?q=test
+<134>Jan 15 10:32:01 MX60 urls src=192.168.1.101:12345 dst=104.16.132.229 request: POST https://api.example.com/data
+
+# Flow/Firewall messages
+<134>Jan 15 10:33:22 MX60 flows src=192.168.1.100:54321 dst=8.8.8.8:53 protocol=udp action=allow all
+<134>Jan 15 10:33:45 MX60 firewall src=192.168.1.101:443 dst=172.217.164.110:443 protocol=tcp action=allow all
+<134>Jan 15 10:34:10 MX60 firewall src=10.0.0.50:1234 dst=192.168.1.200:80 protocol=tcp action=deny rule=blocked_rule
+<134>Jan 15 10:35:00 MX60 vpn_firewall src=192.168.1.100:500 dst=203.0.113.1:500 protocol=udp action=allow all
+<134>Jan 15 10:35:30 MX60 cellular_firewall src=192.168.1.50:8080 dst=198.51.100.1:80 protocol=tcp action=deny
+
+# Event messages
+<134>Jan 15 10:36:00 MX60 events dhcp_lease client_mac=aa:bb:cc:dd:ee:ff client_ip=192.168.1.150 lease_time=86400
+<134>Jan 15 10:36:30 MR42 events association client_mac=11:22:33:44:55:66 ssid=MyNetwork channel=6
+<134>Jan 15 10:37:00 MS120 events port_status port=5 status=up link_speed=1000
+
+# Security/IDS messages
+<134>Jan 15 10:38:00 MX60 security_event ids_alerted signature=1001 priority=3 shost=192.168.1.100 src=192.168.1.100:54321 dst=203.0.113.50:80 protocol=tcp direction=egress message: INDICATOR-COMPROMISE Suspicious .tk dns query
+<134>Jan 15 10:38:30 MX60 security_event ids_alerted signature=2005 priority=2 src=10.0.0.1:1234 dst=192.168.1.200:443 protocol=tcp direction=ingress message: MALWARE-CNC Known malicious domain
+
+# Air Marshal messages
+<134>Jan 15 10:39:00 MR42 airmarshal_events type=rogue_ssid_detected ssid="EvilTwin" bssid=aa:bb:cc:dd:ee:ff channel=6 rssi=-65 src_mac=11:22:33:44:55:66
+<134>Jan 15 10:39:30 MR42 airmarshal_events type=rogue_ap_detected ssid="FakeAP" bssid=ff:ee:dd:cc:bb:aa channel=11 rssi=-72
+
