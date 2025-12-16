@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ func (m *MerakiModule) Detect(rawMessage string) bool {
 		"events", "urls", "flows", "firewall", "ids-alerts", "security_event",
 		"airmarshal_events", "cellular_firewall", "vpn_firewall",
 	}
-	
+
 	lowerMsg := strings.ToLower(rawMessage)
 	for _, pattern := range merakiPatterns {
 		if strings.Contains(lowerMsg, strings.ToLower(pattern)) {
@@ -37,55 +38,55 @@ func (m *MerakiModule) GetEventType(rawMessage string) string {
 	patterns := map[string]*regexp.Regexp{
 		"vpn_connectivity_change": regexp.MustCompile(`type=vpn_connectivity_change`),
 		"vpn_ike_established":     regexp.MustCompile(`IKE_SA.*established`),
-		"vpn_child_established":    regexp.MustCompile(`CHILD_SA.*established`),
-		"vpn_ike_deleted":          regexp.MustCompile(`deleting IKE_SA|ISAKMP-SA deleted`),
-		"vpn_child_closed":         regexp.MustCompile(`closing CHILD_SA|IPsec-SA established`),
+		"vpn_child_established":   regexp.MustCompile(`CHILD_SA.*established`),
+		"vpn_ike_deleted":         regexp.MustCompile(`deleting IKE_SA|ISAKMP-SA deleted`),
+		"vpn_child_closed":        regexp.MustCompile(`closing CHILD_SA|IPsec-SA established`),
 		"vpn_phase1_initiate":     regexp.MustCompile(`initiate new phase 1|initiate new phase 2`),
-		"vpn_phase2_failed":        regexp.MustCompile(`phase2 negotiation failed|failed to get sainfo|failed to pre-process ph2`),
-		"vpn_ipsec_queued":         regexp.MustCompile(`IPsec-SA request queued`),
-		"vpn_isakmp_purge":         regexp.MustCompile(`purging ISAKMP-SA`),
-		"anyconnect_start":         regexp.MustCompile(`anyconnect.*started`),
-		"anyconnect_auth_success":  regexp.MustCompile(`anyconnect_vpn_auth_success`),
-		"anyconnect_auth_failure":  regexp.MustCompile(`anyconnect_vpn_auth_failure`),
-		"anyconnect_connect":       regexp.MustCompile(`anyconnect_vpn_connect`),
-		"anyconnect_disconnect":    regexp.MustCompile(`anyconnect_vpn_disconnect`),
-		"anyconnect_session":       regexp.MustCompile(`anyconnect_vpn_session_manager`),
-		"uplink_connectivity":       regexp.MustCompile(`(uplink|Cellular connection|failover)`),
-		"dhcp_lease":                regexp.MustCompile(`dhcp lease`),
-		"dhcp_no_offers":            regexp.MustCompile(`dhcp no offers`),
-		"dhcp_blocked":              regexp.MustCompile(`Blocked DHCP server`),
-		"urls":                      regexp.MustCompile(`\burls\b`),
-		"firewall":                  regexp.MustCompile(`\bfirewall\b|cellular_firewall|vpn_firewall`),
-		"flows":                     regexp.MustCompile(`\bflows\b`),
-		"ids_alert":                 regexp.MustCompile(`ids-alerts|ids_alerted`),
-		"security_file_scanned":    regexp.MustCompile(`security_filtering_file_scanned`),
-		"security_disposition":     regexp.MustCompile(`security_filtering_disposition_change`),
-		"port_status":               regexp.MustCompile(`port.*status changed`),
-		"stp_guard":                 regexp.MustCompile(`STP BPDU.*blocked|spanning-tree guard`),
-		"stp_role_change":           regexp.MustCompile(`STP role|spanning-tree interface role`),
-		"8021x_auth":                regexp.MustCompile(`8021x_auth|8021x_eap_success`),
-		"8021x_deauth":              regexp.MustCompile(`8021x_deauth|8021x_client_deauth`),
-		"8021x_failure":             regexp.MustCompile(`8021x_eap_failure`),
-		"vrrp_collision":            regexp.MustCompile(`VRRP.*collision|incompatible configuration`),
-		"vrrp_transition":           regexp.MustCompile(`VRRP.*transition|VRRP passive to VRRP active`),
-		"power_supply":              regexp.MustCompile(`Power supply.*inserted`),
-		"association":               regexp.MustCompile(`type=association`),
-		"disassociation":            regexp.MustCompile(`type=disassociation`),
-		"wpa_auth":                  regexp.MustCompile(`type=wpa_auth`),
-		"wpa_deauth":                regexp.MustCompile(`type=wpa_deauth`),
-		"wpa_failed":                regexp.MustCompile(`auth_neg_failed.*is_wpa`),
-		"splash_auth":               regexp.MustCompile(`type=splash_auth`),
-		"packet_flood":              regexp.MustCompile(`device_packet_flood`),
-		"rogue_ssid":                regexp.MustCompile(`rogue_ssid_detected`),
-		"ssid_spoofing":             regexp.MustCompile(`ssid_spoofing_detected`),
+		"vpn_phase2_failed":       regexp.MustCompile(`phase2 negotiation failed|failed to get sainfo|failed to pre-process ph2`),
+		"vpn_ipsec_queued":        regexp.MustCompile(`IPsec-SA request queued`),
+		"vpn_isakmp_purge":        regexp.MustCompile(`purging ISAKMP-SA`),
+		"anyconnect_start":        regexp.MustCompile(`anyconnect.*started`),
+		"anyconnect_auth_success": regexp.MustCompile(`anyconnect_vpn_auth_success`),
+		"anyconnect_auth_failure": regexp.MustCompile(`anyconnect_vpn_auth_failure`),
+		"anyconnect_connect":      regexp.MustCompile(`anyconnect_vpn_connect`),
+		"anyconnect_disconnect":   regexp.MustCompile(`anyconnect_vpn_disconnect`),
+		"anyconnect_session":      regexp.MustCompile(`anyconnect_vpn_session_manager`),
+		"uplink_connectivity":     regexp.MustCompile(`(uplink|Cellular connection|failover)`),
+		"dhcp_lease":              regexp.MustCompile(`dhcp lease`),
+		"dhcp_no_offers":          regexp.MustCompile(`dhcp no offers`),
+		"dhcp_blocked":            regexp.MustCompile(`Blocked DHCP server`),
+		"urls":                    regexp.MustCompile(`\burls\b`),
+		"firewall":                regexp.MustCompile(`\bfirewall\b|cellular_firewall|vpn_firewall`),
+		"flows":                   regexp.MustCompile(`\bflows\b`),
+		"ids_alert":               regexp.MustCompile(`ids-alerts|ids_alerted`),
+		"security_file_scanned":   regexp.MustCompile(`security_filtering_file_scanned`),
+		"security_disposition":    regexp.MustCompile(`security_filtering_disposition_change`),
+		"port_status":             regexp.MustCompile(`port.*status changed`),
+		"stp_guard":               regexp.MustCompile(`STP BPDU.*blocked|spanning-tree guard`),
+		"stp_role_change":         regexp.MustCompile(`STP role|spanning-tree interface role`),
+		"8021x_auth":              regexp.MustCompile(`8021x_auth|8021x_eap_success`),
+		"8021x_deauth":            regexp.MustCompile(`8021x_deauth|8021x_client_deauth`),
+		"8021x_failure":           regexp.MustCompile(`8021x_eap_failure`),
+		"vrrp_collision":          regexp.MustCompile(`VRRP.*collision|incompatible configuration`),
+		"vrrp_transition":         regexp.MustCompile(`VRRP.*transition|VRRP passive to VRRP active`),
+		"power_supply":            regexp.MustCompile(`Power supply.*inserted`),
+		"association":             regexp.MustCompile(`type=association`),
+		"disassociation":          regexp.MustCompile(`type=disassociation`),
+		"wpa_auth":                regexp.MustCompile(`type=wpa_auth`),
+		"wpa_deauth":              regexp.MustCompile(`type=wpa_deauth`),
+		"wpa_failed":              regexp.MustCompile(`auth_neg_failed.*is_wpa`),
+		"splash_auth":             regexp.MustCompile(`type=splash_auth`),
+		"packet_flood":            regexp.MustCompile(`device_packet_flood`),
+		"rogue_ssid":              regexp.MustCompile(`rogue_ssid_detected`),
+		"ssid_spoofing":           regexp.MustCompile(`ssid_spoofing_detected`),
 	}
-	
+
 	for eventType, pattern := range patterns {
 		if pattern.MatchString(rawMessage) {
 			return eventType
 		}
 	}
-	
+
 	return "unknown"
 }
 
@@ -93,25 +94,25 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 	entry.DeviceType = "meraki"
 	entry.EventType = m.GetEventType(rawMessage)
 	entry.Fields = make(map[string]interface{})
-	
+
 	// Extract device model
 	if match := regexp.MustCompile(`(MX\d+|MS\d+|MR\d+|MV\d+|MG\d+|MT\d+|\w+_appliance|\w+_Z\d+)`).FindString(rawMessage); match != "" {
 		entry.Fields["device_model"] = match
 	}
-	
+
 	// Extract timestamp if present
 	if match := regexp.MustCompile(`(\d+\.\d+)`).FindString(rawMessage); match != "" {
 		if ts, err := strconv.ParseFloat(match, 64); err == nil {
 			entry.Fields["meraki_timestamp"] = time.Unix(int64(ts), int64((ts-float64(int64(ts)))*1e9))
 		}
 	}
-	
+
 	// Parse key-value pairs
 	kvPairs := ExtractKeyValuePairs(rawMessage)
 	for k, v := range kvPairs {
 		entry.Fields[k] = v
 	}
-	
+
 	// Event-specific parsing
 	switch entry.EventType {
 	case "vpn_connectivity_change":
@@ -129,7 +130,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if ident, ok := entry.Fields["peer_ident"].(string); ok {
 			entry.Fields["peer_ident"] = ident
 		}
-		
+
 	case "vpn_ike_established", "vpn_child_established", "vpn_ike_deleted", "vpn_child_closed":
 		entry.EventCategory = "VPN"
 		// Extract VPN peer info
@@ -151,7 +152,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`spi=([a-f0-9]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["spi"] = match[1]
 		}
-		
+
 	case "vpn_phase1_initiate", "vpn_phase2_failed", "vpn_ipsec_queued":
 		entry.EventCategory = "VPN"
 		if match := regexp.MustCompile(`for\s+([^\s]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -163,13 +164,13 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 			entry.Fields["remote_ip"] = match[3]
 			entry.Fields["remote_port"] = match[4]
 		}
-		
+
 	case "vpn_isakmp_purge":
 		entry.EventCategory = "VPN"
 		if match := regexp.MustCompile(`spi=([a-f0-9:]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["spi"] = match[1]
 		}
-		
+
 	case "anyconnect_auth_success", "anyconnect_auth_failure", "anyconnect_connect", "anyconnect_disconnect", "anyconnect_session":
 		entry.EventCategory = "VPN"
 		if match := regexp.MustCompile(`Peer IP=([\d\.]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -196,7 +197,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`Session Type:\s+(\w+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["session_type"] = match[1]
 		}
-		
+
 	case "uplink_connectivity":
 		entry.EventCategory = "Network"
 		if strings.Contains(rawMessage, "Cellular") {
@@ -210,7 +211,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`failover to (\w+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["failover_to"] = match[1]
 		}
-		
+
 	case "dhcp_lease":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`ip ([\d\.]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -231,7 +232,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`dns ([\d\.,\s]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["dns_servers"] = strings.TrimSpace(match[1])
 		}
-		
+
 	case "dhcp_no_offers":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`mac ([A-F0-9:]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -240,7 +241,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`host = ([\d\.]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["host"] = match[1]
 		}
-		
+
 	case "dhcp_blocked":
 		entry.EventCategory = "Security"
 		if match := regexp.MustCompile(`from ([A-F0-9:]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -249,7 +250,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`on VLAN (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["vlan"] = match[1]
 		}
-		
+
 	case "firewall", "flows", "cellular_firewall", "vpn_firewall":
 		entry.EventCategory = "Firewall"
 		if src, ok := entry.Fields["src"].(string); ok {
@@ -291,7 +292,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		} else if strings.Contains(rawMessage, " deny ") {
 			entry.Fields["action"] = "deny"
 		}
-		
+
 	case "ids_alert", "security_file_scanned", "security_disposition":
 		entry.EventCategory = "Security"
 		if sig, ok := entry.Fields["signature"].(string); ok {
@@ -337,7 +338,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if disposition, ok := entry.Fields["disposition"].(string); ok {
 			entry.Fields["file_disposition"] = disposition
 		}
-		
+
 	case "urls":
 		entry.EventCategory = "Web"
 		if request, ok := entry.Fields["request"].(string); ok {
@@ -369,7 +370,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if mac, ok := entry.Fields["mac"].(string); ok {
 			entry.Fields["mac_address"] = mac
 		}
-		
+
 	case "port_status":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`port (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -379,7 +380,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 			entry.Fields["old_status"] = match[1]
 			entry.Fields["new_status"] = match[2]
 		}
-		
+
 	case "stp_guard":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`Port (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -388,7 +389,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`from ([A-F0-9:]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["source_mac"] = match[1]
 		}
-		
+
 	case "stp_role_change":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`Port (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -398,7 +399,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 			entry.Fields["old_role"] = match[1]
 			entry.Fields["new_role"] = match[2]
 		}
-		
+
 	case "8021x_auth", "8021x_deauth", "8021x_failure":
 		entry.EventCategory = "Authentication"
 		if identity, ok := entry.Fields["identity"].(string); ok {
@@ -407,7 +408,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if port, ok := entry.Fields["port"].(string); ok {
 			entry.Fields["port_number"] = port
 		}
-		
+
 	case "vrrp_collision":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`virtual router (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -419,14 +420,14 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`on VLAN (\w+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["vlan"] = match[1]
 		}
-		
+
 	case "vrrp_transition":
 		entry.EventCategory = "Network"
 		if match := regexp.MustCompile(`from VRRP (\w+) to VRRP (\w+)`).FindStringSubmatch(rawMessage); len(match) > 2 {
 			entry.Fields["old_state"] = match[1]
 			entry.Fields["new_state"] = match[2]
 		}
-		
+
 	case "power_supply":
 		entry.EventCategory = "Hardware"
 		if match := regexp.MustCompile(`Power supply ([^\s]+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
@@ -435,7 +436,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if match := regexp.MustCompile(`slot (\d+)`).FindStringSubmatch(rawMessage); len(match) > 1 {
 			entry.Fields["slot"] = match[1]
 		}
-		
+
 	case "association", "disassociation":
 		entry.EventCategory = "Wireless"
 		if radio, ok := entry.Fields["radio"].(string); ok {
@@ -468,7 +469,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if dnsServer, ok := entry.Fields["dns_server"].(string); ok {
 			entry.Fields["dns_server"] = dnsServer
 		}
-		
+
 	case "wpa_auth", "wpa_deauth", "wpa_failed":
 		entry.EventCategory = "Wireless"
 		if radio, ok := entry.Fields["radio"].(string); ok {
@@ -480,7 +481,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if aid, ok := entry.Fields["aid"].(string); ok {
 			entry.Fields["association_id"] = aid
 		}
-		
+
 	case "splash_auth":
 		entry.EventCategory = "Wireless"
 		if ip, ok := entry.Fields["ip"].(string); ok {
@@ -498,7 +499,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if upload, ok := entry.Fields["upload"].(string); ok {
 			entry.Fields["upload_limit"] = upload
 		}
-		
+
 	case "packet_flood":
 		entry.EventCategory = "Security"
 		if packet, ok := entry.Fields["packet"].(string); ok {
@@ -522,7 +523,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 		if reason, ok := entry.Fields["reason"].(string); ok {
 			entry.Fields["end_reason"] = reason
 		}
-		
+
 	case "rogue_ssid", "ssid_spoofing":
 		entry.EventCategory = "Security"
 		if ssid, ok := entry.Fields["ssid"].(string); ok {
@@ -541,7 +542,7 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 			entry.Fields["vap"] = vap
 		}
 	}
-	
+
 	return entry
 }
 
@@ -553,7 +554,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		Actions:  []Action{},
 		Metadata: make(map[string]string),
 	}
-	
+
 	switch entry.EventType {
 	case "vpn_connectivity_change":
 		info.Icon = "🔐"
@@ -581,7 +582,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "Peer Identity", Value: peerIdent, Type: "text"})
 		}
 		info.Visualization = "vpn_tunnel"
-		
+
 	case "vpn_ike_established":
 		info.Icon = "🔐"
 		info.Color = "#10b981"
@@ -598,7 +599,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "VPN Peer", Value: peer, Type: "text"})
 		}
 		info.Visualization = "vpn_tunnel"
-		
+
 	case "vpn_child_established":
 		info.Icon = "🔐"
 		info.Color = "#10b981"
@@ -618,7 +619,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "SPI Outbound", Value: spiOut, Type: "text"})
 		}
 		info.Visualization = "vpn_tunnel"
-		
+
 	case "vpn_ike_deleted", "vpn_child_closed":
 		info.Icon = "🔓"
 		info.Color = "#ef4444"
@@ -637,7 +638,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "Remote IP", Value: remoteIP, Type: "ip"})
 		}
 		info.Visualization = "vpn_tunnel"
-		
+
 	case "vpn_phase1_initiate", "vpn_phase2_failed", "vpn_ipsec_queued", "vpn_isakmp_purge":
 		info.Icon = "🔄"
 		info.Color = "#f59e0b"
@@ -664,13 +665,13 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if remoteIP, ok := entry.Fields["remote_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Remote IP", Value: remoteIP, Type: "ip"})
 		}
-		
+
 	case "anyconnect_start":
 		info.Icon = "🚀"
 		info.Color = "#10b981"
 		info.Title = "AnyConnect Server Started"
 		info.Description = "AnyConnect VPN server is now running"
-		
+
 	case "anyconnect_auth_success":
 		info.Icon = "✅"
 		info.Color = "#10b981"
@@ -682,7 +683,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if peerIP, ok := entry.Fields["peer_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Peer IP", Value: peerIP, Type: "ip"})
 		}
-		
+
 	case "anyconnect_auth_failure":
 		info.Icon = "❌"
 		info.Color = "#ef4444"
@@ -691,7 +692,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if peerIP, ok := entry.Fields["peer_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Peer IP", Value: peerIP, Type: "ip"})
 		}
-		
+
 	case "anyconnect_connect":
 		info.Icon = "🔗"
 		info.Color = "#10b981"
@@ -707,7 +708,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if remoteIP, ok := entry.Fields["remote_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Connected From", Value: remoteIP, Type: "ip"})
 		}
-		
+
 	case "anyconnect_disconnect":
 		info.Icon = "🔌"
 		info.Color = "#ef4444"
@@ -719,7 +720,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if localIP, ok := entry.Fields["local_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Assigned IP", Value: localIP, Type: "ip"})
 		}
-		
+
 	case "anyconnect_session":
 		info.Icon = "👤"
 		info.Color = "#6366f1"
@@ -734,7 +735,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if sessionType, ok := entry.Fields["session_type"].(string); ok {
 			info.Badges = append(info.Badges, Badge{Label: "Type", Color: "#6366f1", Value: sessionType})
 		}
-		
+
 	case "uplink_connectivity":
 		info.Icon = "📡"
 		info.Color = "#6366f1"
@@ -757,7 +758,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Badges = append(info.Badges, Badge{Label: "Failover", Color: "#f59e0b", Value: failoverTo})
 		}
 		info.Visualization = "network_topology"
-		
+
 	case "dhcp_lease":
 		info.Icon = "🌐"
 		info.Color = "#10b981"
@@ -782,7 +783,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if dnsServers, ok := entry.Fields["dns_servers"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "DNS Servers", Value: dnsServers, Type: "text"})
 		}
-		
+
 	case "dhcp_no_offers":
 		info.Icon = "⚠️"
 		info.Color = "#f59e0b"
@@ -794,7 +795,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if host, ok := entry.Fields["host"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Host", Value: host, Type: "ip"})
 		}
-		
+
 	case "dhcp_blocked":
 		info.Icon = "🚫"
 		info.Color = "#ef4444"
@@ -807,60 +808,80 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "VLAN", Value: vlan, Type: "text"})
 			info.Badges = append(info.Badges, Badge{Label: "VLAN", Color: "#8b5cf6", Value: vlan})
 		}
-		
+
 	case "firewall", "flows", "cellular_firewall", "vpn_firewall":
 		info.Icon = "🔥"
 		info.Color = "#f59e0b"
 		info.Title = "Firewall Rule Matched"
+
+		// Determine firewall type
+		if entry.EventType == "cellular_firewall" {
+			info.Badges = append(info.Badges, Badge{Label: "Type", Color: "#3b82f6", Value: "Cellular"})
+		} else if entry.EventType == "vpn_firewall" {
+			info.Badges = append(info.Badges, Badge{Label: "Type", Color: "#6366f1", Value: "VPN"})
+		}
+
 		if action, ok := entry.Fields["action"].(string); ok {
 			if action == "allow" {
 				info.Color = "#10b981"
-				info.Description = "Traffic allowed"
+				info.Description = "Traffic allowed by firewall rule"
 				info.Badges = append(info.Badges, Badge{Label: "Action", Color: "#10b981", Value: "Allow"})
 			} else {
 				info.Color = "#ef4444"
-				info.Description = "Traffic denied"
+				info.Description = "Traffic denied by firewall rule"
 				info.Badges = append(info.Badges, Badge{Label: "Action", Color: "#ef4444", Value: "Deny"})
 			}
 		}
 		if rule, ok := entry.Fields["rule_pattern"].(string); ok {
-			info.Description = rule
+			info.Details = append(info.Details, DetailItem{Label: "Rule Pattern", Value: rule, Type: "text"})
 		}
 		if srcIP, ok := entry.Fields["source_ip"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Source", Value: srcIP, Type: "ip"})
+			info.Details = append(info.Details, DetailItem{Label: "Source IP", Value: srcIP, Type: "ip"})
 		}
 		if dstIP, ok := entry.Fields["dest_ip"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Destination", Value: dstIP, Type: "ip"})
+			info.Details = append(info.Details, DetailItem{Label: "Destination IP", Value: dstIP, Type: "ip"})
 		}
 		if protocol, ok := entry.Fields["protocol"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Protocol", Value: strings.ToUpper(protocol), Type: "text"})
 			info.Badges = append(info.Badges, Badge{Label: "Protocol", Color: "#3b82f6", Value: strings.ToUpper(protocol)})
 		}
 		if sport, ok := entry.Fields["source_port"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Source Port", Value: sport, Type: "text"})
 		}
 		if dport, ok := entry.Fields["dest_port"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Dest Port", Value: dport, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "Destination Port", Value: dport, Type: "text"})
+			// Add common port service identification
+			portServices := map[string]string{
+				"80": "HTTP", "443": "HTTPS", "22": "SSH", "23": "Telnet",
+				"25": "SMTP", "53": "DNS", "21": "FTP", "3389": "RDP",
+			}
+			if service, ok := portServices[dport]; ok {
+				info.Badges = append(info.Badges, Badge{Label: "Service", Color: "#8b5cf6", Value: service})
+			}
 		}
 		if mac, ok := entry.Fields["mac_address"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "MAC Address", Value: mac, Type: "mac"})
+			info.Details = append(info.Details, DetailItem{Label: "Device MAC", Value: mac, Type: "mac"})
 		}
 		info.Visualization = "flow"
-		info.Actions = append(info.Actions, Action{Label: "View Rule", Type: "view_rule", URL: "#"})
-		
+		info.Actions = append(info.Actions, Action{Label: "View Firewall Rule", Type: "view_rule", URL: "#"})
+		info.Actions = append(info.Actions, Action{Label: "Block Source IP", Type: "block_ip", URL: "#"})
+
 	case "ids_alert":
 		info.Icon = "🛡️"
 		info.Color = "#ef4444"
 		info.Title = "IDS Alert"
 		if sig, ok := entry.Fields["signature_id"].(string); ok {
-			info.Description = "Signature matched: " + sig
+			info.Description = "Intrusion Detection System signature matched"
 			sigParts := strings.Split(sig, ":")
 			if len(sigParts) > 0 {
+				sigURL := "https://www.snort.org/rule_docs?sid=" + sigParts[0]
 				info.Details = append(info.Details, DetailItem{
-					Label: "Signature",
+					Label: "Signature ID",
 					Value: sig,
 					Type:  "signature",
-					Link:  "https://www.snort.org/rule_docs?sid=" + sigParts[0],
+					Link:  sigURL,
 				})
+				info.Actions = append(info.Actions, Action{Label: "View Signature Details", Type: "link", URL: sigURL})
 			}
 		}
 		if priority, ok := entry.Fields["alert_priority"].(string); ok {
@@ -869,53 +890,91 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			priorityLabels := map[int]string{1: "High", 2: "Medium", 3: "Low", 4: "Very Low"}
 			if color, ok := priorityColors[priorityInt]; ok {
 				info.Badges = append(info.Badges, Badge{
-					Label: "Priority",
+					Label: "Threat Level",
 					Color: color,
 					Value: priorityLabels[priorityInt],
 				})
 			}
 		}
 		if direction, ok := entry.Fields["direction"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Direction", Value: direction, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "Traffic Direction", Value: direction, Type: "text"})
+			info.Badges = append(info.Badges, Badge{Label: "Direction", Color: "#6366f1", Value: direction})
 		}
 		if srcIP, ok := entry.Fields["source_ip"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Source", Value: srcIP, Type: "ip"})
+			info.Details = append(info.Details, DetailItem{Label: "Source IP", Value: srcIP, Type: "ip"})
+		}
+		if srcPort, ok := entry.Fields["source_port"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Source Port", Value: srcPort, Type: "text"})
 		}
 		if dstIP, ok := entry.Fields["dest_ip"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Destination", Value: dstIP, Type: "ip"})
+			info.Details = append(info.Details, DetailItem{Label: "Destination IP", Value: dstIP, Type: "ip"})
+		}
+		if dstPort, ok := entry.Fields["dest_port"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Destination Port", Value: dstPort, Type: "text"})
+		}
+		if protocol, ok := entry.Fields["protocol"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Protocol", Value: protocol, Type: "text"})
+			info.Badges = append(info.Badges, Badge{Label: "Protocol", Color: "#3b82f6", Value: strings.ToUpper(protocol)})
 		}
 		if decision, ok := entry.Fields["decision"].(string); ok {
-			info.Badges = append(info.Badges, Badge{Label: "Decision", Color: "#ef4444", Value: decision})
+			decisionColor := "#10b981"
+			if decision == "blocked" {
+				decisionColor = "#ef4444"
+			}
+			info.Badges = append(info.Badges, Badge{Label: "Action", Color: decisionColor, Value: strings.ToUpper(decision)})
 		}
 		if alertMsg, ok := entry.Fields["alert_message"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Message", Value: alertMsg, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "Alert Description", Value: alertMsg, Type: "text"})
 		}
-		info.Actions = append(info.Actions, Action{Label: "View Signature", Type: "link", URL: "#"})
-		
+		if destMac, ok := entry.Fields["dest_mac"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Target MAC", Value: destMac, Type: "mac"})
+		}
+		info.Visualization = "security_alert"
+		info.Actions = append(info.Actions, Action{Label: "Search Similar Alerts", Type: "search", URL: "#"})
+
 	case "security_file_scanned":
 		info.Icon = "🦠"
 		info.Color = "#ef4444"
 		info.Title = "Malicious File Blocked"
 		info.Description = "File blocked by AMP (Advanced Malware Protection)"
 		if fileName, ok := entry.Fields["file_name"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "File Name", Value: fileName, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "Threat Name", Value: fileName, Type: "text"})
+			info.Badges = append(info.Badges, Badge{Label: "Threat", Color: "#ef4444", Value: "Malicious"})
 		}
 		if sha256, ok := entry.Fields["file_sha256"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "SHA256", Value: sha256, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "File SHA256", Value: sha256, Type: "text"})
+			// Add VirusTotal lookup action
+			info.Actions = append(info.Actions, Action{
+				Label: "View on VirusTotal",
+				Type:  "link",
+				URL:   "https://www.virustotal.com/gui/file/" + sha256,
+			})
 		}
 		if url, ok := entry.Fields["url"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "URL", Value: url, Type: "url", Link: url})
+			info.Details = append(info.Details, DetailItem{Label: "Source URL", Value: url, Type: "url", Link: url})
+		}
+		if srcIP, ok := entry.Fields["source_ip"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Source IP", Value: srcIP, Type: "ip"})
+		}
+		if dstIP, ok := entry.Fields["dest_ip"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Destination IP", Value: dstIP, Type: "ip"})
+		}
+		if mac, ok := entry.Fields["mac_address"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Device MAC", Value: mac, Type: "mac"})
 		}
 		if disposition, ok := entry.Fields["file_disposition"].(string); ok {
 			info.Badges = append(info.Badges, Badge{Label: "Disposition", Color: "#ef4444", Value: disposition})
 		}
 		if action, ok := entry.Fields["action"].(string); ok {
-			info.Badges = append(info.Badges, Badge{Label: "Action", Color: "#ef4444", Value: action})
+			actionColor := "#10b981"
+			if action == "block" {
+				actionColor = "#ef4444"
+			}
+			info.Badges = append(info.Badges, Badge{Label: "Action Taken", Color: actionColor, Value: strings.ToUpper(action)})
 		}
-		if srcIP, ok := entry.Fields["source_ip"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Source IP", Value: srcIP, Type: "ip"})
-		}
-		
+		info.Visualization = "security_threat"
+		info.Actions = append(info.Actions, Action{Label: "Block Source IP", Type: "block_ip", URL: "#"})
+
 	case "security_disposition":
 		info.Icon = "🔄"
 		info.Color = "#f59e0b"
@@ -930,7 +989,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if disposition, ok := entry.Fields["file_disposition"].(string); ok {
 			info.Badges = append(info.Badges, Badge{Label: "Disposition", Color: "#ef4444", Value: disposition})
 		}
-		
+
 	case "urls":
 		info.Icon = "🌐"
 		info.Color = "#3b82f6"
@@ -951,7 +1010,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if mac, ok := entry.Fields["mac_address"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "MAC Address", Value: mac, Type: "mac"})
 		}
-		
+
 	case "port_status":
 		info.Icon = "🔌"
 		info.Color = "#8b5cf6"
@@ -972,7 +1031,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Badges = append(info.Badges, Badge{Label: "Status", Color: color, Value: newStatus})
 		}
 		info.Visualization = "port_status"
-		
+
 	case "stp_guard":
 		info.Icon = "🛡️"
 		info.Color = "#ef4444"
@@ -984,7 +1043,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if srcMac, ok := entry.Fields["source_mac"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Source MAC", Value: srcMac, Type: "mac"})
 		}
-		
+
 	case "stp_role_change":
 		info.Icon = "🔄"
 		info.Color = "#6366f1"
@@ -1003,7 +1062,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 				info.Badges = append(info.Badges, Badge{Label: "Role", Color: color, Value: newRole})
 			}
 		}
-		
+
 	case "8021x_auth":
 		info.Icon = "🔑"
 		info.Color = "#10b981"
@@ -1018,7 +1077,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Badges = append(info.Badges, Badge{Label: "Port", Color: "#8b5cf6", Value: port})
 		}
 		info.Badges = append(info.Badges, Badge{Label: "Type", Color: "#6366f1", Value: "802.1X"})
-		
+
 	case "8021x_deauth":
 		info.Icon = "🔓"
 		info.Color = "#ef4444"
@@ -1030,7 +1089,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if port, ok := entry.Fields["port_number"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Port", Value: port, Type: "text"})
 		}
-		
+
 	case "8021x_failure":
 		info.Icon = "❌"
 		info.Color = "#ef4444"
@@ -1039,7 +1098,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if user, ok := entry.Fields["user"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "User", Value: user, Type: "text"})
 		}
-		
+
 	case "vrrp_collision":
 		info.Icon = "⚠️"
 		info.Color = "#f59e0b"
@@ -1054,7 +1113,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if vlan, ok := entry.Fields["vlan"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "VLAN", Value: vlan, Type: "text"})
 		}
-		
+
 	case "vrrp_transition":
 		info.Icon = "🔄"
 		info.Color = "#6366f1"
@@ -1065,7 +1124,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if newState, ok := entry.Fields["new_state"].(string); ok {
 			info.Badges = append(info.Badges, Badge{Label: "State", Color: "#10b981", Value: newState})
 		}
-		
+
 	case "power_supply":
 		info.Icon = "⚡"
 		info.Color = "#10b981"
@@ -1078,15 +1137,23 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "Slot", Value: slot, Type: "text"})
 			info.Badges = append(info.Badges, Badge{Label: "Slot", Color: "#10b981", Value: slot})
 		}
-		
+
 	case "association":
 		info.Icon = "📶"
 		info.Color = "#10b981"
-		info.Title = "Wireless Association"
-		info.Description = "Client associated with access point"
+		info.Title = "Wireless Client Association"
+		info.Description = "New client connected to wireless network"
 		if channel, ok := entry.Fields["channel"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Channel", Value: channel, Type: "text"})
 			info.Badges = append(info.Badges, Badge{Label: "Channel", Color: "#8b5cf6", Value: channel})
+		}
+		if radio, ok := entry.Fields["radio"].(string); ok {
+			radioBand := "2.4 GHz"
+			if radio == "1" {
+				radioBand = "5 GHz"
+			}
+			info.Details = append(info.Details, DetailItem{Label: "Radio Band", Value: radioBand, Type: "text"})
+			info.Badges = append(info.Badges, Badge{Label: "Band", Color: "#6366f1", Value: radioBand})
 		}
 		if rssi, ok := entry.Fields["rssi"].(string); ok {
 			rssiInt, _ := strconv.Atoi(rssi)
@@ -1096,40 +1163,89 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			} else if rssiInt < -60 {
 				rssiColor = "#f59e0b"
 			}
-			info.Details = append(info.Details, DetailItem{Label: "RSSI", Value: rssi + " dBm", Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "Signal Strength", Value: rssi + " dBm", Type: "text"})
 			info.Badges = append(info.Badges, Badge{Label: "RSSI", Color: rssiColor, Value: rssi + " dBm"})
+			if signalQuality, ok := entry.Fields["signal_quality"].(string); ok {
+				qualityColor := "#10b981"
+				if signalQuality == "Poor" {
+					qualityColor = "#ef4444"
+				} else if signalQuality == "Fair" {
+					qualityColor = "#f59e0b"
+				}
+				info.Badges = append(info.Badges, Badge{Label: "Quality", Color: qualityColor, Value: signalQuality})
+			}
 		}
 		if vap, ok := entry.Fields["vap"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "VAP", Value: vap, Type: "text"})
-		}
-		if radio, ok := entry.Fields["radio"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Radio", Value: radio, Type: "text"})
+			info.Details = append(info.Details, DetailItem{Label: "VAP ID", Value: vap, Type: "text"})
 		}
 		if clientIP, ok := entry.Fields["client_ip"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Client IP", Value: clientIP, Type: "ip"})
 		}
-		if duration, ok := entry.Fields["session_duration"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Session Duration", Value: duration + "s", Type: "text"})
+		if dnsServer, ok := entry.Fields["dns_server"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "DNS Server", Value: dnsServer, Type: "ip"})
 		}
-		
+		if aid, ok := entry.Fields["association_id"].(string); ok {
+			info.Details = append(info.Details, DetailItem{Label: "Association ID", Value: aid, Type: "text"})
+		}
+		info.Visualization = "wireless_connection"
+
 	case "disassociation":
 		info.Icon = "📡"
 		info.Color = "#ef4444"
-		info.Title = "Wireless Disassociation"
-		info.Description = "Client disassociated from access point"
+		info.Title = "Wireless Client Disassociation"
+		info.Description = "Client disconnected from access point"
 		if reason, ok := entry.Fields["disconnect_reason"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Reason", Value: reason, Type: "text"})
+			reasonDesc := map[string]string{
+				"1": "Unspecified",
+				"2": "Previous authentication no longer valid",
+				"3": "Deauthenticated because sending station is leaving",
+				"4": "Disassociated due to inactivity",
+				"5": "Disassociated because AP is unable to handle",
+				"6": "Class 2 frame received from non-authenticated station",
+				"7": "Class 3 frame received from non-associated station",
+				"8": "Disassociated because sending station is leaving",
+			}
+			if desc, ok := reasonDesc[reason]; ok {
+				info.Details = append(info.Details, DetailItem{Label: "Disconnect Reason", Value: desc + " (Code: " + reason + ")", Type: "text"})
+			} else {
+				info.Details = append(info.Details, DetailItem{Label: "Disconnect Reason", Value: "Code: " + reason, Type: "text"})
+			}
 		}
 		if instigator, ok := entry.Fields["instigator"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Instigator", Value: instigator, Type: "text"})
+			instigatorDesc := map[string]string{
+				"0": "Client",
+				"1": "AP",
+				"2": "Unknown",
+				"3": "AP (due to inactivity)",
+			}
+			if desc, ok := instigatorDesc[instigator]; ok {
+				info.Details = append(info.Details, DetailItem{Label: "Disconnect Initiated By", Value: desc, Type: "text"})
+				info.Badges = append(info.Badges, Badge{Label: "Initiated By", Color: "#6366f1", Value: desc})
+			}
 		}
 		if duration, ok := entry.Fields["session_duration"].(string); ok {
-			info.Details = append(info.Details, DetailItem{Label: "Session Duration", Value: duration + "s", Type: "text"})
+			if durFloat, err := strconv.ParseFloat(duration, 64); err == nil {
+				hours := int(durFloat / 3600)
+				minutes := int((durFloat - float64(hours*3600)) / 60)
+				seconds := int(durFloat) % 60
+				durationStr := fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+				info.Details = append(info.Details, DetailItem{Label: "Session Duration", Value: durationStr, Type: "text"})
+			} else {
+				info.Details = append(info.Details, DetailItem{Label: "Session Duration", Value: duration + "s", Type: "text"})
+			}
 		}
 		if channel, ok := entry.Fields["channel"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Channel", Value: channel, Type: "text"})
 		}
-		
+		if radio, ok := entry.Fields["radio"].(string); ok {
+			radioBand := "2.4 GHz"
+			if radio == "1" {
+				radioBand = "5 GHz"
+			}
+			info.Details = append(info.Details, DetailItem{Label: "Radio Band", Value: radioBand, Type: "text"})
+		}
+		info.Visualization = "wireless_connection"
+
 	case "wpa_auth":
 		info.Icon = "🔐"
 		info.Color = "#10b981"
@@ -1141,19 +1257,19 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if vap, ok := entry.Fields["vap"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "VAP", Value: vap, Type: "text"})
 		}
-		
+
 	case "wpa_deauth":
 		info.Icon = "🔓"
 		info.Color = "#ef4444"
 		info.Title = "WPA Deauthentication"
 		info.Description = "WPA deauthentication"
-		
+
 	case "wpa_failed":
 		info.Icon = "❌"
 		info.Color = "#ef4444"
 		info.Title = "WPA Authentication Failed"
 		info.Description = "WPA authentication attempt failed"
-		
+
 	case "splash_auth":
 		info.Icon = "🎫"
 		info.Color = "#6366f1"
@@ -1171,7 +1287,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if upload, ok := entry.Fields["upload_limit"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "Upload Limit", Value: upload, Type: "text"})
 		}
-		
+
 	case "packet_flood":
 		info.Icon = "🌊"
 		info.Color = "#ef4444"
@@ -1197,7 +1313,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		if reason, ok := entry.Fields["end_reason"].(string); ok {
 			info.Details = append(info.Details, DetailItem{Label: "End Reason", Value: reason, Type: "text"})
 		}
-		
+
 	case "rogue_ssid":
 		info.Icon = "👹"
 		info.Color = "#ef4444"
@@ -1216,7 +1332,7 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "RSSI", Value: rssi + " dBm", Type: "text"})
 		}
 		info.Badges = append(info.Badges, Badge{Label: "Threat", Color: "#ef4444", Value: "Rogue"})
-		
+
 	case "ssid_spoofing":
 		info.Icon = "🎭"
 		info.Color = "#ef4444"
@@ -1235,19 +1351,19 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 			info.Details = append(info.Details, DetailItem{Label: "Channel", Value: channel, Type: "text"})
 		}
 		info.Badges = append(info.Badges, Badge{Label: "Threat", Color: "#ef4444", Value: "Spoofing"})
-		
+
 	default:
 		info.Icon = "📋"
 		info.Color = "#9ca3af"
 		info.Title = "Meraki Event"
 		info.Description = entry.RawMessage
 	}
-	
+
 	// Add device model if available
 	if model, ok := entry.Fields["device_model"].(string); ok {
 		info.Badges = append(info.Badges, Badge{Label: "Device", Color: "#6366f1", Value: model})
 		info.Metadata["device_model"] = model
 	}
-	
+
 	return info
 }

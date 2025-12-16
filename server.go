@@ -268,6 +268,21 @@ func (s *Server) handleTLSConnection(conn net.Conn) {
 			RawMessage:     tokenStr,
 			StructuredData: make(map[string]map[string]string),
 			ParsedFields:   make(map[string]interface{}),
+			Severity:       6,   // Default to Informational if not parsed
+			Priority:       165, // Default priority (local0.notice)
+			Facility:       20,  // local0
+		}
+
+		// Try to extract priority from raw message if it starts with <PRI>
+		if len(tokenStr) > 0 && tokenStr[0] == '<' {
+			priEnd := strings.Index(tokenStr, ">")
+			if priEnd > 0 && priEnd < 5 {
+				if pri, err := strconv.ParseUint(tokenStr[1:priEnd], 10, 8); err == nil {
+					entry.Priority = uint8(pri)
+					entry.Facility = uint8(pri) / 8
+					entry.Severity = uint8(pri) % 8
+				}
+			}
 		}
 
 		// Try to parse with device modules
@@ -328,6 +343,22 @@ func (s *Server) processMessage(data []byte, remoteAddr, protocol, rfcFormat str
 		RawMessage:     string(data),
 		StructuredData: make(map[string]map[string]string),
 		ParsedFields:   make(map[string]interface{}),
+		Severity:       6,   // Default to Informational if not parsed
+		Priority:       165, // Default priority (local0.notice)
+		Facility:       20,  // local0
+	}
+
+	// Try to extract priority from raw message if it starts with <PRI>
+	if len(data) > 0 && data[0] == '<' {
+		// Look for priority in format <PRI>
+		priEnd := strings.Index(string(data), ">")
+		if priEnd > 0 && priEnd < 5 {
+			if pri, err := strconv.ParseUint(string(data[1:priEnd]), 10, 8); err == nil {
+				entry.Priority = uint8(pri)
+				entry.Facility = uint8(pri) / 8
+				entry.Severity = uint8(pri) % 8
+			}
+		}
 	}
 
 	// Try to parse with device modules

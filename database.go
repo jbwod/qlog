@@ -140,7 +140,7 @@ func (d *Database) GetLogs(limit, offset int, severity *uint8, hostname, appname
 	}
 	defer rows.Close()
 
-	var logs []*LogEntry
+	logs := make([]*LogEntry, 0) // Initialize as empty slice, not nil
 	for rows.Next() {
 		var entry LogEntry
 		var structuredDataJSON string

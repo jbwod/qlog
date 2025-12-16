@@ -431,7 +431,18 @@ async function fetchLogs() {
         }
         
         const logs = await response.json();
-        console.log('Received logs:', logs.length, logs);
+        console.log('Received logs response:', logs);
+        
+        if (!logs || !Array.isArray(logs)) {
+            console.error('Invalid logs response:', logs);
+            const container = document.getElementById('logsList');
+            if (container) {
+                container.innerHTML = '<div class="empty-state">Invalid response from server</div>';
+            }
+            return;
+        }
+        
+        console.log('Received', logs.length, 'logs');
         renderLogs(logs);
         
         // Update pagination
@@ -568,67 +579,107 @@ function displayLogDetail(log, displayInfo) {
 
 function renderDeviceSpecificDetail(log, displayInfo, severity, severityColor) {
     let html = `
-        <div class="device-header" style="background: linear-gradient(135deg, ${displayInfo.color}20 0%, ${displayInfo.color}05 100%); border-left: 4px solid ${displayInfo.color}; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
-                <span style="font-size: 32px;">${displayInfo.icon}</span>
-                <div>
-                    <h3 style="margin: 0; font-size: 20px; color: ${displayInfo.color};">${displayInfo.title}</h3>
-                    <p style="margin: 4px 0 0 0; color: #9ca3af; font-size: 14px;">${displayInfo.description || ''}</p>
+        <div class="device-header" style="background: linear-gradient(135deg, ${displayInfo.color}15 0%, ${displayInfo.color}05 100%); border-left: 4px solid ${displayInfo.color}; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 16px;">
+                <div style="width: 64px; height: 64px; background: ${displayInfo.color}20; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-size: 36px;">${displayInfo.icon}</span>
+                </div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; color: ${displayInfo.color}; letter-spacing: -0.5px;">${displayInfo.title}</h3>
+                    <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.5;">${displayInfo.description || 'No description available'}</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid ${displayInfo.color}20;">
     `;
     
-    // Render badges
+    // Render badges with improved styling
     if (displayInfo.badges && displayInfo.badges.length > 0) {
         displayInfo.badges.forEach(badge => {
             html += `
-                <span style="padding: 4px 12px; background: ${badge.color}20; color: ${badge.color}; border: 1px solid ${badge.color}40; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                    ${badge.label}: ${badge.value}
+                <span style="padding: 6px 14px; background: ${badge.color}15; color: ${badge.color}; border: 1px solid ${badge.color}30; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <span style="opacity: 0.8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">${badge.label}:</span>
+                    <span>${badge.value}</span>
                 </span>
             `;
         });
     }
     
+    // Add severity badge
+    html += `
+                <span style="padding: 6px 14px; background: ${severityColor}15; color: ${severityColor}; border: 1px solid ${severityColor}30; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <span style="opacity: 0.8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Severity:</span>
+                    <span>${severity}</span>
+                </span>
+    `;
+    
     html += `
             </div>
         </div>
         
-        <div class="detail-section">
-            <h4 style="margin-bottom: 16px; color: #e4e7eb; font-size: 16px;">Event Details</h4>
+        <div class="detail-section" style="background: #1a1f2e; padding: 20px; border-radius: 12px; border: 1px solid #2d3441; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 20px 0; color: #e4e7eb; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 4px; height: 16px; background: ${displayInfo.color}; border-radius: 2px;"></span>
+                Event Details
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
     `;
     
-    // Render detail items
+    // Render detail items with enhanced styling
     if (displayInfo.details && displayInfo.details.length > 0) {
         displayInfo.details.forEach(detail => {
             let valueHtml = detail.value;
+            let icon = '';
+            
             if (detail.type === 'ip') {
-                valueHtml = `<span style="font-family: monospace; color: #6366f1;">${detail.value}</span>`;
+                valueHtml = `<span style="font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; color: #6366f1; font-weight: 600; background: #6366f110; padding: 4px 8px; border-radius: 4px;">${detail.value}</span>`;
+                icon = '🌐';
+            } else if (detail.type === 'mac') {
+                valueHtml = `<span style="font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; color: #8b5cf6; font-weight: 600; background: #8b5cf610; padding: 4px 8px; border-radius: 4px;">${detail.value}</span>`;
+                icon = '🔗';
             } else if (detail.type === 'url' && detail.link) {
-                valueHtml = `<a href="${detail.link}" target="_blank" style="color: #3b82f6; text-decoration: none;">${detail.value}</a>`;
+                valueHtml = `<a href="${detail.link}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; font-weight: 500; border-bottom: 1px solid #3b82f640; transition: all 0.2s;" onmouseover="this.style.borderBottomColor='#3b82f6'" onmouseout="this.style.borderBottomColor='#3b82f640'">${detail.value}</a>`;
+                icon = '🔗';
             } else if (detail.type === 'signature' && detail.link) {
-                valueHtml = `<a href="${detail.link}" target="_blank" style="color: #ef4444; text-decoration: none; font-weight: 600;">${detail.value}</a>`;
+                valueHtml = `<a href="${detail.link}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 700; border-bottom: 2px solid #ef444460; transition: all 0.2s;" onmouseover="this.style.borderBottomColor='#ef4444'" onmouseout="this.style.borderBottomColor='#ef444460'">${detail.value}</a>`;
+                icon = '🛡️';
+            } else {
+                valueHtml = `<span style="color: #e4e7eb;">${detail.value}</span>`;
             }
             
             html += `
-                <div class="log-detail-item">
-                    <div class="log-detail-label">${detail.label}</div>
-                    <div class="log-detail-value">${valueHtml}</div>
+                <div style="background: #252b3b; padding: 14px; border-radius: 8px; border: 1px solid #2d3441; transition: all 0.2s;" onmouseover="this.style.borderColor='#3d4451'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#2d3441'; this.style.transform='translateY(0)'">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        ${icon ? `<span>${icon}</span>` : ''}
+                        ${detail.label}
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.5; word-break: break-word;">${valueHtml}</div>
                 </div>
             `;
         });
+    } else {
+        html += `<div style="grid-column: 1 / -1; text-align: center; color: #9ca3af; padding: 20px;">No additional details available</div>`;
     }
     
-    // Render actions
+    html += `</div></div>`;
+    
+    // Render actions with enhanced styling
     if (displayInfo.actions && displayInfo.actions.length > 0) {
         html += `
-            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #2d3441;">
-                <h4 style="margin-bottom: 16px; color: #e4e7eb; font-size: 16px;">Actions</h4>
+            <div style="background: #1a1f2e; padding: 20px; border-radius: 12px; border: 1px solid #2d3441; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 16px 0; color: #e4e7eb; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 4px; height: 16px; background: ${displayInfo.color}; border-radius: 2px;"></span>
+                    Quick Actions
+                </h4>
                 <div style="display: flex; gap: 12px; flex-wrap: wrap;">
         `;
         displayInfo.actions.forEach(action => {
+            const actionColor = action.type === 'link' ? '#3b82f6' : displayInfo.color;
             html += `
-                <button class="btn-primary" onclick="${action.type === 'link' ? `window.open('${action.url}', '_blank')` : 'handleAction(\'' + action.type + '\', ' + log.id + ')'}" style="padding: 8px 16px; font-size: 13px;">
+                <button onclick="${action.type === 'link' ? `window.open('${action.url}', '_blank')` : 'handleAction(\'' + action.type + '\', ' + log.id + ')'}" 
+                        style="padding: 10px 20px; font-size: 13px; font-weight: 600; background: ${actionColor}15; color: ${actionColor}; border: 1px solid ${actionColor}30; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;"
+                        onmouseover="this.style.background='${actionColor}25'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)'"
+                        onmouseout="this.style.background='${actionColor}15'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    ${action.type === 'link' ? '🔗' : action.type === 'view_rule' ? '📋' : '⚙️'}
                     ${action.label}
                 </button>
             `;
@@ -646,22 +697,37 @@ function renderDeviceSpecificDetail(log, displayInfo, severity, severityColor) {
             html += renderNetworkTopologyVisualization(log.parsed_fields, displayInfo);
         } else if (displayInfo.visualization === 'port_status') {
             html += renderPortStatusVisualization(log.parsed_fields);
+        } else if (displayInfo.visualization === 'wireless_connection') {
+            html += renderWirelessConnectionVisualization(log.parsed_fields, displayInfo);
+        } else if (displayInfo.visualization === 'security_alert') {
+            html += renderSecurityAlertVisualization(log.parsed_fields, displayInfo);
+        } else if (displayInfo.visualization === 'security_threat') {
+            html += renderSecurityThreatVisualization(log.parsed_fields, displayInfo);
         }
     }
     
     html += `</div>`;
     
-    // Add raw message section
+    // Add raw message section with enhanced styling
     html += `
-        <div class="detail-section" style="margin-top: 24px;">
-            <h4 style="margin-bottom: 16px; color: #e4e7eb; font-size: 16px;">Raw Message</h4>
-            <div class="log-detail-item">
-                <div class="log-detail-value"><pre style="white-space: pre-wrap; font-size: 12px;">${log.raw_message || '-'}</pre></div>
+        <div class="detail-section" style="background: #1a1f2e; padding: 20px; border-radius: 12px; border: 1px solid #2d3441; margin-top: 20px;">
+            <h4 style="margin: 0 0 16px 0; color: #e4e7eb; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 4px; height: 16px; background: #9ca3af; border-radius: 2px;"></span>
+                Raw Syslog Message
+            </h4>
+            <div style="background: #0f1419; padding: 16px; border-radius: 8px; border: 1px solid #2d3441; overflow-x: auto;">
+                <pre style="white-space: pre-wrap; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; font-size: 12px; line-height: 1.6; color: #e4e7eb; margin: 0; word-break: break-word;">${escapeHtml(log.raw_message || '-')}</pre>
             </div>
         </div>
     `;
     
     return html;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function renderFlowVisualization(fields) {
@@ -829,6 +895,136 @@ function renderPortStatusVisualization(fields) {
                     </span>
                 </div>
             ` : ''}
+        </div>
+    `;
+}
+
+function renderWirelessConnectionVisualization(fields, displayInfo) {
+    const rssi = parseInt(fields.rssi) || 0;
+    const rssiColor = rssi >= -50 ? '#10b981' : rssi >= -60 ? '#84cc16' : rssi >= -70 ? '#f59e0b' : '#ef4444';
+    const signalBars = rssi >= -50 ? 4 : rssi >= -60 ? 3 : rssi >= -70 ? 2 : 1;
+    
+    return `
+        <div style="margin-top: 24px; padding: 20px; background: #1a1f2e; border-radius: 12px; border: 1px solid #2d3441;">
+            <h4 style="margin: 0 0 20px 0; color: #e4e7eb; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 4px; height: 16px; background: ${displayInfo.color}; border-radius: 2px;"></span>
+                Wireless Connection Details
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                ${fields.channel ? `
+                    <div style="background: #252b3b; padding: 16px; border-radius: 8px; border: 1px solid #2d3441;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Channel</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #8b5cf6;">${fields.channel}</div>
+                    </div>
+                ` : ''}
+                ${fields.rssi ? `
+                    <div style="background: #252b3b; padding: 16px; border-radius: 8px; border: 1px solid #2d3441;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Signal Strength</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="display: flex; gap: 3px; align-items: flex-end;">
+                                ${[1, 2, 3, 4].map(i => `
+                                    <div style="width: 8px; background: ${i <= signalBars ? rssiColor : '#2d3441'}; border-radius: 2px 2px 0 0; transition: all 0.3s;"
+                                         style="height: ${i * 8 + 4}px;"></div>
+                                `).join('')}
+                            </div>
+                            <div>
+                                <div style="font-size: 20px; font-weight: 700; color: ${rssiColor};">${fields.rssi} dBm</div>
+                                ${fields.signal_quality ? `
+                                    <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">${fields.signal_quality}</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+                ${fields.radio_band || fields.radio ? `
+                    <div style="background: #252b3b; padding: 16px; border-radius: 8px; border: 1px solid #2d3441;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Radio Band</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #6366f1;">${fields.radio_band || (fields.radio === '1' ? '5 GHz' : '2.4 GHz')}</div>
+                    </div>
+                ` : ''}
+                ${fields.client_ip ? `
+                    <div style="background: #252b3b; padding: 16px; border-radius: 8px; border: 1px solid #2d3441;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Client IP</div>
+                        <div style="font-family: monospace; font-size: 14px; color: #6366f1; font-weight: 600;">${fields.client_ip}</div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function renderSecurityAlertVisualization(fields, displayInfo) {
+    return `
+        <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #ef444415 0%, #ef444405 100%); border-radius: 12px; border: 2px solid #ef4444;">
+            <h4 style="margin: 0 0 20px 0; color: #ef4444; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span>🛡️</span>
+                Security Alert Details
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                ${fields.source_ip ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #ef4444;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Source</div>
+                        <div style="font-family: monospace; color: #ef4444; font-weight: 600; font-size: 14px;">${fields.source_ip}</div>
+                        ${fields.source_port ? `<div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Port: ${fields.source_port}</div>` : ''}
+                    </div>
+                ` : ''}
+                ${fields.dest_ip ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Target</div>
+                        <div style="font-family: monospace; color: #f59e0b; font-weight: 600; font-size: 14px;">${fields.dest_ip}</div>
+                        ${fields.dest_port ? `<div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Port: ${fields.dest_port}</div>` : ''}
+                    </div>
+                ` : ''}
+                ${fields.protocol ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Protocol</div>
+                        <div style="font-weight: 600; color: #3b82f6; font-size: 16px; text-transform: uppercase;">${fields.protocol}</div>
+                    </div>
+                ` : ''}
+            </div>
+            ${fields.alert_message ? `
+                <div style="margin-top: 16px; padding: 12px; background: #252b3b; border-radius: 8px; border-left: 3px solid #ef4444;">
+                    <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Alert Description</div>
+                    <div style="color: #e4e7eb; font-size: 13px; line-height: 1.5;">${fields.alert_message}</div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function renderSecurityThreatVisualization(fields, displayInfo) {
+    return `
+        <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #ef444415 0%, #ef444405 100%); border-radius: 12px; border: 2px solid #ef4444;">
+            <h4 style="margin: 0 0 20px 0; color: #ef4444; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span>🦠</span>
+                Malware Threat Details
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                ${fields.file_name ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #ef4444;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Threat Name</div>
+                        <div style="color: #ef4444; font-weight: 600; font-size: 14px; word-break: break-word;">${fields.file_name}</div>
+                    </div>
+                ` : ''}
+                ${fields.file_sha256 ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">File Hash (SHA256)</div>
+                        <div style="font-family: monospace; color: #8b5cf6; font-size: 11px; word-break: break-all;">${fields.file_sha256}</div>
+                    </div>
+                ` : ''}
+                ${fields.source_ip ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Source IP</div>
+                        <div style="font-family: monospace; color: #3b82f6; font-weight: 600; font-size: 14px;">${fields.source_ip}</div>
+                    </div>
+                ` : ''}
+                ${fields.mac_address ? `
+                    <div style="background: #252b3b; padding: 14px; border-radius: 8px; border-left: 3px solid #6366f1;">
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase;">Device MAC</div>
+                        <div style="font-family: monospace; color: #6366f1; font-weight: 600; font-size: 14px;">${fields.mac_address}</div>
+                    </div>
+                ` : ''}
+            </div>
         </div>
     `;
 }
