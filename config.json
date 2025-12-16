@@ -1,0 +1,29 @@
+{
+  "database": {
+    "path": "qlog.db"
+  },
+  "servers": {
+    "udp": {
+      "enabled": true,
+      "port": 514
+    },
+    "tcp": {
+      "enabled": true,
+      "port": 514
+    },
+    "tls": {
+      "enabled": false,
+      "port": 6514,
+      "cert_file": "",
+      "key_file": ""
+    }
+  },
+  "web": {
+    "port": 8080
+  },
+  "parsing": {
+    "best_effort": true,
+    "rfc3164_enabled": true,
+    "rfc5424_enabled": true
+  }
+}

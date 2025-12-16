@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>qLog - Enterprise Syslog Server</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-primary">qLog</span>
+                        <span class="logo-subtitle">Syslog Server</span>
+                    </div>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-view="dashboard">
+                        <div class="nav-item-content">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span class="nav-text">Dashboard</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="logs">
+                        <div class="nav-item-content">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <span class="nav-text">Logs</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="analytics">
+                        <div class="nav-item-content">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span class="nav-text">Analytics</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="settings">
+                        <div class="nav-item-content">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                            </svg>
+                            <span class="nav-text">Settings</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <div>
+                        <h1 id="pageTitle" class="page-title">Dashboard</h1>
+                        <p class="page-subtitle" id="pageSubtitle">Monitor and analyze syslog messages in real-time</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator-wrapper">
+                        <div class="status-indicator" id="statusIndicator">
+                            <div class="status-pulse"></div>
+                            <span class="status-text">Online</span>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="globalSearch" placeholder="Search logs, hosts, messages...">
+                        <button class="search-clear" id="searchClear" style="display: none;">×</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Dashboard View -->
+                <div class="view" id="dashboardView">
+                    <div class="stats-grid">
+                        <div class="stat-card stat-card-primary">
+                            <div class="stat-card-background"></div>
+                            <div class="stat-icon-wrapper">
+                                <div class="stat-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Messages</div>
+                                <div class="stat-value" id="statTotal">0</div>
+                                <div class="stat-trend">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                    <span id="statTotalChange">+0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-success">
+                            <div class="stat-card-background"></div>
+                            <div class="stat-icon-wrapper">
+                                <div class="stat-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Last Hour</div>
+                                <div class="stat-value" id="statRecent">0</div>
+                                <div class="stat-trend positive">
+                                    <span id="statRecentChange">Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-danger">
+                            <div class="stat-card-background"></div>
+                            <div class="stat-icon-wrapper">
+                                <div class="stat-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Errors</div>
+                                <div class="stat-value" id="statErrors">0</div>
+                                <div class="stat-trend negative">
+                                    <span>Critical</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-info">
+                            <div class="stat-card-background"></div>
+                            <div class="stat-icon-wrapper">
+                                <div class="stat-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Active Hosts</div>
+                                <div class="stat-value" id="statHosts">0</div>
+                                <div class="stat-trend">
+                                    <span>Connected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Messages by Severity</h3>
+                                    <p class="chart-subtitle">Distribution of log severity levels</p>
+                                </div>
+                                <select id="severityChartPeriod" class="chart-select">
+                                    <option value="1h">Last Hour</option>
+                                    <option value="24h" selected>Last 24 Hours</option>
+                                    <option value="7d">Last 7 Days</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="severityChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Protocol Distribution</h3>
+                                    <p class="chart-subtitle">Traffic by protocol type</p>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="protocolChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-logs-card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Recent Logs</h3>
+                                <p class="card-subtitle">Latest syslog messages</p>
+                            </div>
+                            <button class="btn-icon" onclick="showView('logs')" title="View All Logs">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="recentLogsList" class="logs-list-compact"></div>
+                    </div>
+                </div>
+
+                <!-- Logs View -->
+                <div class="view hidden" id="logsView">
+                    <div class="filters-card">
+                        <div class="filters-header">
+                            <h3>Filters</h3>
+                            <button class="btn-text" id="clearFilters">Clear All</button>
+                        </div>
+                        <div class="filters-grid">
+                            <div class="filter-group">
+                                <label class="filter-label">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                    Severity
+                                </label>
+                                <select id="severityFilter" class="filter-select">
+                                    <option value="">All Severities</option>
+                                    <option value="0">Emergency</option>
+                                    <option value="1">Alert</option>
+                                    <option value="2">Critical</option>
+                                    <option value="3">Error</option>
+                                    <option value="4">Warning</option>
+                                    <option value="5">Notice</option>
+                                    <option value="6">Informational</option>
+                                    <option value="7">Debug</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                    Hostname
+                                </label>
+                                <input type="text" id="hostnameFilter" class="filter-input" placeholder="Filter by hostname">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                    </svg>
+                                    App Name
+                                </label>
+                                <input type="text" id="appnameFilter" class="filter-input" placeholder="Filter by app">
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn-primary" id="applyFilters">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="22 6 13.5 14.5 8.5 9.5 2 16"></polyline>
+                                        <polyline points="16 6 22 6 22 12"></polyline>
+                                    </svg>
+                                    Apply Filters
+                                </button>
+                                <button class="btn-danger" id="clearLogs">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="logs-card">
+                        <div class="logs-header">
+                            <div class="col-timestamp">
+                                <span>Timestamp</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="col-severity">Severity</div>
+                            <div class="col-hostname">Hostname</div>
+                            <div class="col-app">Application</div>
+                            <div class="col-message">Message</div>
+                        </div>
+                        <div id="logsList" class="logs-list"></div>
+                        <div class="pagination">
+                            <button class="btn-icon" id="prevPage" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                            </button>
+                            <span id="pageInfo" class="page-info">Page 1</span>
+                            <button class="btn-icon" id="nextPage">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics View -->
+                <div class="view hidden" id="analyticsView">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Top Hostnames</h3>
+                                    <p class="card-subtitle">Most active sources</p>
+                                </div>
+                            </div>
+                            <div id="topHostnames" class="analytics-list"></div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Top Applications</h3>
+                                    <p class="card-subtitle">Most logged applications</p>
+                                </div>
+                            </div>
+                            <div id="topApplications" class="analytics-list"></div>
+                        </div>
+                        <div class="analytics-card full-width">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Message Trends</h3>
+                                    <p class="card-subtitle">Message volume over time</p>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trendsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div class="view hidden" id="settingsView">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div>
+                                    <h3 class="settings-title">Auto Refresh</h3>
+                                    <p class="settings-desc">Automatically refresh logs at specified intervals</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="autoRefreshToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div>
+                                    <h3 class="settings-title">Refresh Interval</h3>
+                                    <p class="settings-desc">How often to update the log view</p>
+                                </div>
+                                <select id="refreshInterval" class="settings-select">
+                                    <option value="1000">1 second</option>
+                                    <option value="2000" selected>2 seconds</option>
+                                    <option value="5000">5 seconds</option>
+                                    <option value="10000">10 seconds</option>
+                                    <option value="30000">30 seconds</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <div class="settings-header">
+                                <div>
+                                    <h3 class="settings-title">Items Per Page</h3>
+                                    <p class="settings-desc">Number of logs displayed per page</p>
+                                </div>
+                                <select id="itemsPerPage" class="settings-select">
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Log Detail Modal -->
+    <div class="modal" id="logModal">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Log Details</h2>
+                    <p class="modal-subtitle">Detailed information about this log entry</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="logDetails" class="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
