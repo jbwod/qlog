@@ -135,3 +135,6 @@ echo "Failed: $fail"
 echo ""
 echo "Check the qLog web UI at http://localhost:8080 to view the logs"
 
+
+
+

@@ -38,4 +38,9 @@ func main() {
 
 	<-sigChan
 	log.Println("Shutting down...")
+
+	// Gracefully stop all listeners
+	if err := server.Stop(); err != nil {
+		log.Printf("Error stopping server: %v", err)
+	}
 }

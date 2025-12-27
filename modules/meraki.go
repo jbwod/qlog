@@ -547,6 +547,102 @@ func (m *MerakiModule) Parse(rawMessage string, entry *ParsedLog) *ParsedLog {
 }
 
 // GetDisplayInfo returns UI display information - this is a large function that handles all event types
+func (m *MerakiModule) GetMetadata() *ModuleMetadata {
+	return &ModuleMetadata{
+		DeviceType:  "meraki",
+		DeviceName:  "Meraki",
+		Description: "Cisco Meraki devices (MX, MS, MR, MV, MG, MT)",
+		ImageURL:    "https://yt3.googleusercontent.com/hM4xLQR4_XQtRe0kBQSXiz06r_JTnA3YpOc7rH1OqjiN7_IfIeMU7bGdC3cRqDjit-nHcBf-ug=s900-c-k-c0x00ffffff-no-rj",
+		EventTypes: []EventTypeInfo{
+			// Web
+			{ID: "urls", Name: "URLs", Description: "HTTP GET requests", Category: "Web"},
+			// Firewall
+			{ID: "flows", Name: "Flows", Description: "L3 firewall rule matched (deprecated, use firewall)", Category: "Firewall"},
+			{ID: "firewall", Name: "Firewall", Description: "L3 firewall rule matched", Category: "Firewall"},
+			{ID: "cellular_firewall", Name: "Cellular Firewall", Description: "Cellular firewall rule matched", Category: "Firewall"},
+			{ID: "vpn_firewall", Name: "VPN Firewall", Description: "VPN firewall rule matched", Category: "Firewall"},
+			// Security
+			{ID: "ids_alert", Name: "IDS Alert", Description: "IDS signature matched", Category: "Security"},
+			{ID: "security_file_scanned", Name: "Security File Scanned", Description: "Malicious file blocked by AMP", Category: "Security"},
+			{ID: "security_disposition", Name: "Security Disposition Change", Description: "File issued retrospective malicious disposition", Category: "Security"},
+			// VPN
+			{ID: "vpn_connectivity_change", Name: "VPN Connectivity Change", Description: "Site-to-site VPN connectivity change", Category: "VPN"},
+			{ID: "vpn_ike_established", Name: "VPN Phase 1 Established", Description: "IKE_SA tunnel established", Category: "VPN"},
+			{ID: "vpn_child_established", Name: "VPN Phase 2 Established", Description: "CHILD_SA tunnel established", Category: "VPN"},
+			{ID: "vpn_ike_deleted", Name: "VPN Phase 1 Closed", Description: "IKE_SA tunnel deleted", Category: "VPN"},
+			{ID: "vpn_child_closed", Name: "VPN Phase 2 Closed", Description: "CHILD_SA tunnel closed", Category: "VPN"},
+			{ID: "vpn_phase1_initiate", Name: "VPN Phase 1 Initiated", Description: "Initiating Phase 1 negotiation", Category: "VPN"},
+			{ID: "vpn_phase2_failed", Name: "VPN Phase 2 Failed", Description: "Phase 2 negotiation failed", Category: "VPN"},
+			{ID: "vpn_ipsec_queued", Name: "IPsec-SA Queued", Description: "Waiting for Phase 1", Category: "VPN"},
+			{ID: "vpn_isakmp_purge", Name: "ISAKMP-SA Purged", Description: "Purging ISAKMP security association", Category: "VPN"},
+			// AnyConnect
+			{ID: "anyconnect_start", Name: "AnyConnect Server Started", Description: "AnyConnect VPN server is now running", Category: "VPN"},
+			{ID: "anyconnect_auth_success", Name: "AnyConnect Auth Success", Description: "User successfully authenticated", Category: "VPN"},
+			{ID: "anyconnect_auth_failure", Name: "AnyConnect Auth Failure", Description: "Authentication failed", Category: "VPN"},
+			{ID: "anyconnect_connect", Name: "AnyConnect Connected", Description: "User connected to AnyConnect VPN", Category: "VPN"},
+			{ID: "anyconnect_disconnect", Name: "AnyConnect Disconnected", Description: "User disconnected from AnyConnect VPN", Category: "VPN"},
+			{ID: "anyconnect_session", Name: "AnyConnect Session Event", Description: "Session manager event", Category: "VPN"},
+			// Network
+			{ID: "uplink_connectivity", Name: "Uplink Connectivity", Description: "Uplink connectivity change or failover", Category: "Network"},
+			{ID: "dhcp_lease", Name: "DHCP Lease", Description: "DHCP lease assignment", Category: "Network"},
+			{ID: "dhcp_no_offers", Name: "DHCP No Offers", Description: "DHCP no offers received", Category: "Network"},
+			{ID: "dhcp_blocked", Name: "DHCP Server Blocked", Description: "Unauthorized DHCP server response blocked", Category: "Network"},
+			// Wireless
+			{ID: "association", Name: "Association", Description: "802.11 association", Category: "Wireless"},
+			{ID: "disassociation", Name: "Disassociation", Description: "802.11 disassociation", Category: "Wireless"},
+			{ID: "wpa_auth", Name: "WPA Authentication", Description: "WPA authentication event", Category: "Wireless"},
+			{ID: "wpa_deauth", Name: "WPA Deauthentication", Description: "WPA deauthentication event", Category: "Wireless"},
+			{ID: "wpa_failed", Name: "WPA Authentication Failed", Description: "WPA authentication negotiation failed", Category: "Wireless"},
+			{ID: "splash_auth", Name: "Splash Authentication", Description: "Guest splash page authentication", Category: "Wireless"},
+			{ID: "rogue_ssid", Name: "Rogue SSID Detected", Description: "Rogue access point SSID detected", Category: "Wireless"},
+			{ID: "ssid_spoofing", Name: "SSID Spoofing Detected", Description: "SSID spoofing attack detected", Category: "Wireless"},
+			// Switch
+			{ID: "port_status", Name: "Port Status Change", Description: "Switch port status change", Category: "Switch"},
+			{ID: "stp_guard", Name: "STP Guard", Description: "Spanning-tree guard state change", Category: "Switch"},
+			{ID: "stp_role_change", Name: "STP Role Change", Description: "Spanning-tree interface role change", Category: "Switch"},
+			// Authentication
+			{ID: "8021x_auth", Name: "802.1X Authentication", Description: "802.1X authentication success", Category: "Authentication"},
+			{ID: "8021x_deauth", Name: "802.1X Deauthentication", Description: "802.1X client deauthentication", Category: "Authentication"},
+			{ID: "8021x_failure", Name: "802.1X Authentication Failed", Description: "802.1X EAP authentication failure", Category: "Authentication"},
+			// Warm Spare
+			{ID: "vrrp_collision", Name: "VRRP Collision", Description: "VRRP collision or incompatible configuration", Category: "Routing"},
+			{ID: "vrrp_transition", Name: "VRRP Transition", Description: "VRRP state transition", Category: "Routing"},
+			// System
+			{ID: "power_supply", Name: "Power Supply Event", Description: "Power supply inserted or removed", Category: "System"},
+			{ID: "packet_flood", Name: "Packet Flood Detected", Description: "Device packet flood detected", Category: "System"},
+		},
+		CommonFields: []FieldInfo{
+			{Key: "src", Label: "Source IP", Description: "Source IP address and port", Type: "ip", Examples: []string{"192.168.1.100:54321"}},
+			{Key: "dst", Label: "Destination IP", Description: "Destination IP address and port", Type: "ip", Examples: []string{"8.8.8.8:53"}},
+			{Key: "source_ip", Label: "Source IP", Description: "Source IP address (extracted from src)", Type: "ip"},
+			{Key: "dest_ip", Label: "Destination IP", Description: "Destination IP address (extracted from dst)", Type: "ip"},
+			{Key: "source_port", Label: "Source Port", Description: "Source port number", Type: "port"},
+			{Key: "dest_port", Label: "Destination Port", Description: "Destination port number", Type: "port"},
+			{Key: "protocol", Label: "Protocol", Description: "Network protocol (tcp, udp, etc.)", Type: "string", Examples: []string{"tcp", "udp", "tcp/ip"}},
+			{Key: "mac", Label: "MAC Address", Description: "Client MAC address", Type: "mac"},
+			{Key: "action", Label: "Action", Description: "Firewall action (allow, deny, blocked)", Type: "string", Examples: []string{"allow", "deny", "blocked"}},
+			{Key: "signature", Label: "Signature", Description: "IDS signature ID", Type: "string", Examples: []string{"1:28423:1"}},
+			{Key: "priority", Label: "Priority", Description: "Alert priority (1=high, 2=medium, 3=low, 4=very low)", Type: "number", Examples: []string{"1", "2", "3", "4"}},
+			{Key: "direction", Label: "Direction", Description: "Traffic direction (ingress, egress)", Type: "string", Examples: []string{"ingress", "egress"}},
+			{Key: "url", Label: "URL", Description: "Requested URL", Type: "url"},
+			{Key: "request", Label: "Request", Description: "HTTP request method and URL", Type: "string"},
+			{Key: "device_model", Label: "Device Model", Description: "Meraki device model", Type: "string", Examples: []string{"MX84", "MS220_8P", "MR18"}},
+		},
+		FilterSuggestions: []FilterSuggestion{
+			{Field: "event_type", Label: "Event Type", Type: "select", Options: []string{"urls", "flows", "firewall", "ids_alert", "security_file_scanned", "vpn_connectivity_change"}},
+			{Field: "action", Label: "Action", Type: "select", Options: []string{"allow", "deny", "blocked"}},
+			{Field: "priority", Label: "Priority", Type: "select", Options: []string{"1", "2", "3", "4"}},
+			{Field: "direction", Label: "Direction", Type: "select", Options: []string{"ingress", "egress"}},
+		},
+		WidgetHints: []WidgetHint{
+			{WidgetType: "top-n", Title: "Top Source IPs", Config: map[string]interface{}{"field": "source_ip"}},
+			{WidgetType: "top-n", Title: "Top Destinations", Config: map[string]interface{}{"field": "dest_ip"}},
+			{WidgetType: "top-n", Title: "Top Protocols", Config: map[string]interface{}{"field": "protocol"}},
+			{WidgetType: "chart-event-type", Title: "Event Type Distribution", Config: map[string]interface{}{"groupBy": "event_type"}},
+		},
+	}
+}
+
 func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 	info := &DisplayInfo{
 		Details:  []DetailItem{},
@@ -872,16 +968,58 @@ func (m *MerakiModule) GetDisplayInfo(entry *ParsedLog) *DisplayInfo {
 		info.Title = "IDS Alert"
 		if sig, ok := entry.Fields["signature_id"].(string); ok {
 			info.Description = "Intrusion Detection System signature matched"
+			// Snort signatures are typically in GID:SID format
+			// URL format: https://www.snort.org/rule_docs/GID-SID
 			sigParts := strings.Split(sig, ":")
-			if len(sigParts) > 0 {
-				sigURL := "https://www.snort.org/rule_docs?sid=" + sigParts[0]
+			var sigURL string
+			var gid, sid string
+
+			if len(sigParts) >= 2 {
+				// Format is GID:SID
+				gid = strings.TrimSpace(sigParts[0])
+				sid = strings.TrimSpace(sigParts[1])
+			} else if len(sigParts) == 1 {
+				// Just SID provided, assume GID is 1 (default for Snort rules)
+				gid = "1"
+				sid = strings.TrimSpace(sigParts[0])
+			}
+
+			// Only create URL if we have valid GID and SID (numeric)
+			if gid != "" && sid != "" {
+				if _, err := strconv.Atoi(gid); err == nil {
+					if _, err := strconv.Atoi(sid); err == nil {
+						// Format: https://www.snort.org/rule_docs/GID-SID
+						sigURL = "https://www.snort.org/rule_docs/" + gid + "-" + sid
+						info.Details = append(info.Details, DetailItem{
+							Label: "Signature ID",
+							Value: sig,
+							Type:  "signature",
+							Link:  sigURL,
+						})
+						info.Actions = append(info.Actions, Action{Label: "View Signature Details", Type: "link", URL: sigURL})
+					} else {
+						// SID is not numeric, just display without link
+						info.Details = append(info.Details, DetailItem{
+							Label: "Signature ID",
+							Value: sig,
+							Type:  "text",
+						})
+					}
+				} else {
+					// GID is not numeric, just display without link
+					info.Details = append(info.Details, DetailItem{
+						Label: "Signature ID",
+						Value: sig,
+						Type:  "text",
+					})
+				}
+			} else {
+				// No valid signature format, just display
 				info.Details = append(info.Details, DetailItem{
 					Label: "Signature ID",
 					Value: sig,
-					Type:  "signature",
-					Link:  sigURL,
+					Type:  "text",
 				})
-				info.Actions = append(info.Actions, Action{Label: "View Signature Details", Type: "link", URL: sigURL})
 			}
 		}
 		if priority, ok := entry.Fields["alert_priority"].(string); ok {

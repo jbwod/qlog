@@ -164,3 +164,6 @@ The web UI automatically:
 4. **Visual**: Icons, colors, and visualizations make logs easier to understand
 5. **Structured**: Extracted fields enable better filtering and search
 
+
+
+

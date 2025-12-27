@@ -1,6 +1,7 @@
 {
   "database": {
-    "path": "qlog.db"
+    "path": "qlog.db",
+    "limit": 0
   },
   "servers": {
     "udp": {
@@ -25,5 +26,60 @@
     "best_effort": true,
     "rfc3164_enabled": true,
     "rfc5424_enabled": true
+  },
+  "listeners": [
+    {
+      "id": "listener-1766851462613132400",
+      "name": "Main",
+      "enabled": true,
+      "protocol": "UDP",
+      "port": 514,
+      "parser": "RFC5424",
+      "description": "Main"
+    }
+  ],
+  "devices": [
+    {
+      "id": "device_1766851483858",
+      "name": "This PC",
+      "device_type": "meraki",
+      "listener_id": "listener-1766851462613132400",
+      "ip_addresses": [
+        "127.0.0.1"
+      ]
+    },
+    {
+      "id": "device_1766851509939",
+      "name": "Jacks UCG",
+      "device_type": "ubiquiti",
+      "listener_id": "listener-1766851462613132400",
+      "ip_addresses": [
+        "192.168.1.1"
+      ]
+    }
+  ],
+  "customization": {
+    "color_scheme": "custom",
+    "primary_color": "#ef4444",
+    "accent_color": "#ef4444",
+    "accent_hover": "#dc2626",
+    "success_color": "#10b981",
+    "warning_color": "#f59e0b",
+    "error_color": "#ef4444",
+    "info_color": "#3b82f6",
+    "background_color": "#0a0d14",
+    "nav_color": "#131720",
+    "bg_tertiary_color": "#1a1f2e",
+    "bg_card_color": "#1e2432",
+    "bg_hover_color": "#252b3b",
+    "text_color": "#f0f2f5",
+    "text_secondary_color": "#8b92a7",
+    "text_tertiary_color": "#6b7280",
+    "logo_color": "#6366f1",
+    "logo_text_color": "#f0f2f5",
+    "brand_name": "Jacks Log Server",
+    "brand_subtitle": "Syslog Server",
+    "brand_logo": "/uploads/logo-1766850846542803500.png",
+    "show_branding": true
   }
 }

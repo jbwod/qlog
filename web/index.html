@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -54,14 +55,38 @@
                         </div>
                         <div class="nav-indicator"></div>
                     </li>
-                    <li class="nav-item" data-view="analytics">
+                    <li class="nav-item" data-view="views">
+                        <div class="nav-item-content">
+                            <i class="fas fa-th-large nav-icon"></i>
+                            <span class="nav-text">Views</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="listeners">
+                        <div class="nav-item-content">
+                            <i class="fas fa-network-wired nav-icon"></i>
+                            <span class="nav-text">Listeners</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="devices">
                         <div class="nav-item-content">
                             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="20" x2="18" y2="10"></line>
-                                <line x1="12" y1="20" x2="12" y2="4"></line>
-                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                                <circle cx="6" cy="8" r="1"></circle>
+                                <circle cx="10" cy="8" r="1"></circle>
+                                <circle cx="14" cy="8" r="1"></circle>
                             </svg>
-                            <span class="nav-text">Analytics</span>
+                            <span class="nav-text">Devices</span>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-view="modules">
+                        <div class="nav-item-content">
+                            <i class="fas fa-puzzle-piece nav-icon"></i>
+                            <span class="nav-text">Modules</span>
                         </div>
                         <div class="nav-indicator"></div>
                     </li>
@@ -89,17 +114,18 @@
                 </div>
                 <div class="header-right">
                     <div class="status-indicator-wrapper">
-                        <div class="status-indicator" id="statusIndicator">
+                        <div class="status-indicator" id="statusIndicator" data-state="offline">
                             <div class="status-pulse"></div>
-                            <span class="status-text">Online</span>
+                            <span class="status-text" id="statusText">Checking...</span>
+                            <span class="status-detail" id="statusDetail" style="margin-left: 8px; font-size: 12px; opacity: 0.8;">Loading</span>
                         </div>
                     </div>
-                    <div class="search-box">
+                    <div class="search-box" id="globalSearchTrigger">
                         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
                         </svg>
-                        <input type="text" id="globalSearch" placeholder="Search logs, hosts, messages...">
+                        <input type="text" id="globalSearch" placeholder="Search logs, hosts, messages..." readonly>
                         <button class="search-clear" id="searchClear" style="display: none;">×</button>
                     </div>
                 </div>
@@ -108,27 +134,76 @@
             <div class="content-wrapper">
                 <!-- Dashboard View -->
                 <div class="view" id="dashboardView">
+                    <!-- Server Information Section -->
+                    <div class="server-info-section" style="margin-bottom: 24px;">
+                        <div class="server-info-card" style="background: #1a1f2e; border: 1px solid #2d3441; border-radius: 12px; padding: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                                <div>
+                                    <h2 style="margin: 0 0 8px 0; color: #e4e7eb; font-size: 20px; font-weight: 600;">Syslog Server</h2>
+                                    <p style="margin: 0; color: #9ca3af; font-size: 14px;">Server status and configuration</p>
+                                </div>
+                                <div class="status-badge" id="serverStatusBadge" style="padding: 6px 12px; background: #10b98120; color: #10b981; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                    <i class="fas fa-circle" style="font-size: 8px; margin-right: 6px;"></i>
+                                    Running
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div>
+                                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">Server IP Addresses</div>
+                                    <div id="serverIPs" style="color: #e4e7eb; font-weight: 500; font-size: 14px;">Loading...</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">Web UI Port</div>
+                                    <div id="webPort" style="color: #e4e7eb; font-weight: 500; font-size: 14px;">Loading...</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">Database Path</div>
+                                    <div id="dbPath" style="color: #e4e7eb; font-weight: 500; font-size: 14px; word-break: break-all;">Loading...</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">Message Limit</div>
+                                    <div id="messageLimit" style="color: #e4e7eb; font-weight: 500; font-size: 14px;">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Listeners and Devices Summary -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                        <div class="summary-card" style="background: #1a1f2e; border: 1px solid #2d3441; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                                <i class="fas fa-network-wired" style="font-size: 20px; color: #6366f1; margin-right: 12px;"></i>
+                                <h3 style="margin: 0; color: #e4e7eb; font-size: 16px; font-weight: 600;">Active Listeners</h3>
+                            </div>
+                            <div id="activeListenersList" style="min-height: 100px;">
+                                <div style="color: #9ca3af; text-align: center; padding: 20px;">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="summary-card" style="background: #1a1f2e; border: 1px solid #2d3441; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                                <i class="fas fa-server" style="font-size: 20px; color: #8b5cf6; margin-right: 12px;"></i>
+                                <h3 style="margin: 0; color: #e4e7eb; font-size: 16px; font-weight: 600;">Device Summary</h3>
+                            </div>
+                            <div id="deviceSummary" style="min-height: 100px;">
+                                <div style="color: #9ca3af; text-align: center; padding: 20px;">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="stats-grid">
                         <div class="stat-card stat-card-primary">
                             <div class="stat-card-background"></div>
                             <div class="stat-icon-wrapper">
                                 <div class="stat-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                    </svg>
+                                    <i class="fas fa-database"></i>
                                 </div>
                             </div>
                             <div class="stat-content">
                                 <div class="stat-label">Total Messages</div>
                                 <div class="stat-value" id="statTotal">0</div>
                                 <div class="stat-trend">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                        <polyline points="17 6 23 6 23 12"></polyline>
-                                    </svg>
-                                    <span id="statTotalChange">+0%</span>
+                                    <i class="fas fa-chart-line" style="font-size: 12px;"></i>
+                                    <span id="statTotalChange">Stored</span>
                                 </div>
                             </div>
                         </div>
@@ -137,9 +212,7 @@
                             <div class="stat-card-background"></div>
                             <div class="stat-icon-wrapper">
                                 <div class="stat-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                    </svg>
+                                    <i class="fas fa-clock"></i>
                                 </div>
                             </div>
                             <div class="stat-content">
@@ -155,11 +228,7 @@
                             <div class="stat-card-background"></div>
                             <div class="stat-icon-wrapper">
                                 <div class="stat-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                    </svg>
+                                    <i class="fas fa-exclamation-triangle"></i>
                                 </div>
                             </div>
                             <div class="stat-content">
@@ -175,11 +244,7 @@
                             <div class="stat-card-background"></div>
                             <div class="stat-icon-wrapper">
                                 <div class="stat-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                        <line x1="8" y1="21" x2="16" y2="21"></line>
-                                        <line x1="12" y1="17" x2="12" y2="21"></line>
-                                    </svg>
+                                    <i class="fas fa-network-wired"></i>
                                 </div>
                             </div>
                             <div class="stat-content">
@@ -244,7 +309,6 @@
                     <div class="filters-card">
                         <div class="filters-header">
                             <h3>Filters</h3>
-                            <button class="btn-text" id="clearFilters">Clear All</button>
                         </div>
                         <div class="filters-grid">
                             <div class="filter-group">
@@ -254,7 +318,7 @@
                                     </svg>
                                     Severity
                                 </label>
-                                <select id="severityFilter" class="filter-select">
+                                <select id="severityFilter" class="filter-select" multiple>
                                     <option value="">All Severities</option>
                                     <option value="0">Emergency</option>
                                     <option value="1">Alert</option>
@@ -268,39 +332,70 @@
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                        <line x1="8" y1="21" x2="16" y2="21"></line>
-                                        <line x1="12" y1="17" x2="12" y2="21"></line>
-                                    </svg>
-                                    Hostname
+                                    <i class="fas fa-server" style="font-size: 14px;"></i>
+                                    Device
                                 </label>
-                                <input type="text" id="hostnameFilter" class="filter-input" placeholder="Filter by hostname">
+                                <input type="text" id="deviceFilter" class="filter-input" placeholder="Filter by device name or IP">
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                                    </svg>
-                                    App Name
+                                    <i class="fas fa-tag" style="font-size: 14px;"></i>
+                                    Device Type
                                 </label>
-                                <input type="text" id="appnameFilter" class="filter-input" placeholder="Filter by app">
+                                <select id="deviceTypeFilter" class="filter-select">
+                                    <option value="">All Device Types</option>
+                                    <option value="generic">Generic</option>
+                                    <option value="meraki">Meraki</option>
+                                    <option value="ubiquiti">Ubiquiti</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">
+                                    <i class="fas fa-bolt" style="font-size: 14px;"></i>
+                                    Event Type
+                                </label>
+                                <select id="eventTypeFilter" class="filter-select" multiple>
+                                    <option value="">All Event Types</option>
+                                    <!-- Event types will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="filter-group" style="position: relative;">
+                                <label class="filter-label">
+                                    <i class="fas fa-calendar" style="font-size: 14px;"></i>
+                                    Date Range
+                                </label>
+                                <select id="dateRangeFilter" class="filter-select">
+                                    <option value="">All Time</option>
+                                    <option value="1h">Last Hour</option>
+                                    <option value="24h" selected>Last 24 Hours</option>
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                                <!-- Calendar popup container (positioned absolutely) -->
+                                <div id="calendarPickerContainer" class="calendar-popup-container" style="display: none;"></div>
+                                <!-- Hidden inputs for API compatibility -->
+                                <input type="hidden" id="dateFromInput">
+                                <input type="hidden" id="dateToInput">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">
+                                    <i class="fas fa-search" style="font-size: 14px;"></i>
+                                    Search
+                                </label>
+                                <input type="text" id="searchFilter" class="filter-input" placeholder="Search in messages, device type, event type...">
                             </div>
                             <div class="filter-actions">
                                 <button class="btn-primary" id="applyFilters">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="22 6 13.5 14.5 8.5 9.5 2 16"></polyline>
-                                        <polyline points="16 6 22 6 22 12"></polyline>
-                                    </svg>
+                                    <i class="fas fa-filter"></i>
                                     Apply Filters
                                 </button>
-                                <button class="btn-danger" id="clearLogs">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                    Clear All
+                                <button class="btn-secondary" id="clearFilters">
+                                    <i class="fas fa-times"></i>
+                                    Clear Filters
+                                </button>
+                                <button class="btn-secondary" id="advancedFilters" title="Advanced Filters">
+                                    <i class="fas fa-cog"></i>
                                 </button>
                             </div>
                         </div>
@@ -308,16 +403,25 @@
 
                     <div class="logs-card">
                         <div class="logs-header">
-                            <div class="col-timestamp">
-                                <span>Timestamp</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <div id="logsColumnsContainer" style="display: flex; gap: 16px; flex: 1;">
+                                    <!-- Columns will be dynamically added here -->
+                                </div>
                             </div>
-                            <div class="col-severity">Severity</div>
-                            <div class="col-hostname">Hostname</div>
-                            <div class="col-app">Application</div>
-                            <div class="col-message">Message</div>
+                            <div style="position: relative;">
+                                <button class="btn-icon" id="logsColumnConfigBtn" title="Configure Columns">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                                <div id="logsColumnConfigMenu" class="column-config-menu" style="display: none;">
+                                    <div class="column-config-header">Configure Columns</div>
+                                    <div class="column-config-list" id="columnConfigList">
+                                        <!-- Column checkboxes will be added here -->
+                                    </div>
+                                    <div class="column-config-actions">
+                                        <button class="btn-secondary btn-sm" onclick="resetColumnConfig()">Reset to Default</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div id="logsList" class="logs-list"></div>
                         <div class="pagination">
@@ -371,8 +475,137 @@
                     </div>
                 </div>
 
-                <!-- Settings View -->
-                <div class="view hidden" id="settingsView">
+                <!-- Listeners View -->
+                <div class="view hidden" id="listenersView">
+                    <div class="listeners-container">
+                        <div class="listeners-header">
+                            <div>
+                                <h2 class="page-title">Syslog Listeners</h2>
+                                <p class="page-subtitle">Configure syslog listeners with different protocols and settings</p>
+                            </div>
+                            <button class="btn-primary" id="addListenerBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Listener
+                            </button>
+                        </div>
+
+                        <div id="listenersList" class="listeners-grid">
+                            <!-- Listeners will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Devices View -->
+                <div class="view hidden" id="devicesView">
+                    <div class="devices-container">
+                        <div class="devices-header">
+                            <div>
+                                <h2 class="page-title">Devices</h2>
+                                <p class="page-subtitle">Configure devices and bind them to listeners by IP address</p>
+                            </div>
+                            <button class="btn-primary" id="addDeviceBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Device
+                            </button>
+                        </div>
+
+                        <div id="devicesList" class="devices-grid">
+                            <!-- Devices will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Views View -->
+                <div class="view hidden" id="viewsView">
+                    <div class="views-container">
+                        <div class="page-header">
+                            <div>
+                                <h2 class="page-title">Custom Views</h2>
+                                <p class="page-subtitle">Create and manage custom dashboard views with drag-and-drop widgets</p>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn-secondary" onclick="importView()">
+                                    <i class="fas fa-upload"></i> Import View
+                                </button>
+                                <button class="btn-primary" id="addViewBtn">
+                                    <i class="fas fa-plus"></i> Create View
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="viewsList" class="views-grid">
+                            <!-- Views will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modules View -->
+                <div class="view hidden" id="modulesView">
+                    <div class="page-container">
+                        <div class="page-header">
+                            <div>
+                                <h2 class="page-title">Device Modules</h2>
+                                <p class="page-subtitle">Enable or disable device detection modules</p>
+                            </div>
+                        </div>
+                        
+                        <div class="modules-container" style="padding: 24px;">
+                            <div id="modulesList" class="modules-grid">
+                                <!-- Modules will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full-Screen View Display -->
+                <div class="view hidden" id="viewDisplayView">
+                    <div class="view-display-container" id="viewDisplayContainer">
+                        <div class="view-display-header" id="viewDisplayHeader">
+                            <div class="view-display-title-section">
+                                <h1 class="view-display-title" id="viewDisplayTitle">Loading View...</h1>
+                                <p class="view-display-subtitle" id="viewDisplaySubtitle"></p>
+                            </div>
+                            <div class="view-display-actions">
+                                <button class="btn-secondary btn-sm" id="viewDisplayRefreshBtn" onclick="refreshViewDisplay()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                                <button class="btn-secondary btn-sm" id="viewDisplayShareBtn" onclick="shareCurrentView()" style="display: none;">
+                                    <i class="fas fa-share"></i> Share
+                                </button>
+                                <button class="btn-secondary btn-sm" id="viewDisplayEditBtn" onclick="editCurrentView()" style="display: none;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn-secondary btn-sm" onclick="closeViewDisplay()">
+                                    <i class="fas fa-times"></i> Close
+                                </button>
+                            </div>
+                        </div>
+                        <div class="view-display-content" id="viewDisplayContent">
+                            <div class="view-display-grid" id="viewDisplayGrid">
+                                <!-- Widgets will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- Modules View -->
+                    <div class="view hidden" id="modulesView">
+                        <div class="page-container">
+                            <div class="page-header">
+                                <h2>Device Modules</h2>
+                                <p class="page-description">Enable or disable device detection modules</p>
+                            </div>
+                            
+                            <div class="modules-container" style="padding: 24px;">
+                                <div id="modulesList" class="modules-grid">
+                                    <!-- Modules will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings View -->
+                    <div class="view hidden" id="settingsView">
                     <div class="settings-grid">
                         <div class="settings-card">
                             <div class="settings-header">
@@ -416,9 +649,608 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Severity Overrides Section -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <div>
+                                <h3 class="settings-section-title">Severity Overrides</h3>
+                                <p class="settings-section-desc">Override severity levels for specific event types</p>
+                            </div>
+                            <button class="btn-primary" id="addSeverityOverrideBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Override
+                            </button>
+                        </div>
+                        <div id="severityOverridesList" class="severity-overrides-list">
+                            <!-- Overrides will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- User Customization Section -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <div>
+                                <h3 class="settings-section-title">User Customization</h3>
+                                <p class="settings-section-desc">Customize the appearance and branding of your qLog interface</p>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-grid" style="margin-top: 20px;">
+                            <!-- Branding, Logo & Favicon Section -->
+                            <div class="settings-card" style="grid-column: 1 / -1;">
+                                <div class="settings-header">
+                                    <div>
+                                        <h3 class="settings-title">Branding & Assets</h3>
+                                        <p class="settings-desc">Customize your brand identity, logo, and favicon</p>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 16px;">
+                                    <div>
+                                        <label class="form-label">Brand Name</label>
+                                        <input type="text" id="brandNameInput" class="form-input" placeholder="qLog">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Brand Subtitle</label>
+                                        <input type="text" id="brandSubtitleInput" class="form-input" placeholder="Syslog Server">
+                                    </div>
+                                </div>
+                                
+                                <!-- Logo Upload -->
+                                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                                    <label class="form-label" style="margin-bottom: 12px; display: block;">Logo</label>
+                                    <div style="display: flex; align-items: center; gap: 16px;">
+                                        <div id="logoPreviewContainer" style="width: 120px; height: 120px; border: 2px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;">
+                                            <div id="logoPlaceholder" style="text-align: center; color: var(--text-secondary); font-size: 12px;">
+                                                <i class="fas fa-image" style="font-size: 32px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                                No Logo
+                                            </div>
+                                            <img id="logoPreviewImg" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;" alt="Logo Preview">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif,image/webp" style="display: none;">
+                                            <button type="button" class="btn-secondary" id="logoUploadBtn" style="margin-bottom: 8px;">
+                                                <i class="fas fa-upload"></i>
+                                                Upload Logo
+                                            </button>
+                                            <button type="button" class="btn-secondary" id="logoRemoveBtn" style="display: none; margin-left: 8px;">
+                                                <i class="fas fa-trash"></i>
+                                                Remove
+                                            </button>
+                                            <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-secondary);">Recommended: 200x200px or larger, transparent background</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Favicon Upload -->
+                                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                                    <label class="form-label" style="margin-bottom: 12px; display: block;">Favicon</label>
+                                    <div style="display: flex; align-items: center; gap: 16px;">
+                                        <div id="faviconPreviewContainer" style="width: 64px; height: 64px; border: 2px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;">
+                                            <div id="faviconPlaceholder" style="text-align: center; color: var(--text-secondary); font-size: 10px;">
+                                                <i class="fas fa-globe" style="font-size: 24px; margin-bottom: 4px; display: block; opacity: 0.5;"></i>
+                                            </div>
+                                            <img id="faviconPreviewImg" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;" alt="Favicon Preview">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <input type="file" id="faviconFileInput" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml" style="display: none;">
+                                            <button type="button" class="btn-secondary" id="faviconUploadBtn">
+                                                <i class="fas fa-upload"></i>
+                                                Upload Favicon
+                                            </button>
+                                            <button type="button" class="btn-secondary" id="faviconRemoveBtn" style="display: none; margin-left: 8px;">
+                                                <i class="fas fa-trash"></i>
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Show Branding Toggle -->
+                                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                                    <div class="settings-header">
+                                        <div>
+                                            <h3 class="settings-title">Show Branding</h3>
+                                            <p class="settings-desc">Display brand name and logo in the sidebar</p>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="showBrandingToggle">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Color Templates -->
+                            <div class="settings-card" style="grid-column: 1 / -1;">
+                                <div class="settings-header">
+                                    <div>
+                                        <h3 class="settings-title">Color Template</h3>
+                                        <p class="settings-desc">Choose a predefined color theme or create your own</p>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px;">
+                                    <div id="colorTemplatesGrid" class="color-templates-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
+                                        <!-- Templates will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Custom Colors Section -->
+                            <div class="settings-card" id="customColorsCard" style="grid-column: 1 / -1; display: none;">
+                                <div class="settings-header">
+                                    <div>
+                                        <h3 class="settings-title">Custom Colors</h3>
+                                        <p class="settings-desc">Fine-tune individual color values</p>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                                    <!-- Primary/Accent Colors -->
+                                    <div>
+                                        <label class="form-label">Primary Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="primaryColorInput" value="#6366f1" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="primaryColorText" value="#6366f1" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Accent Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="accentColorInput" value="#6366f1" style="width: 60px; height: 60px; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="accentColorText" value="#6366f1" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Accent Hover</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="accentHoverInput" value="#4f46e5" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="accentHoverText" value="#4f46e5" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Success Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="successColorInput" value="#10b981" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="successColorText" value="#10b981" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Warning Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="warningColorInput" value="#f59e0b" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="warningColorText" value="#f59e0b" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Error Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="errorColorInput" value="#ef4444" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="errorColorText" value="#ef4444" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Info Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="infoColorInput" value="#3b82f6" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="infoColorText" value="#3b82f6" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Background Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="backgroundColorInput" value="#0a0d14" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="backgroundColorText" value="#0a0d14" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Navigation Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="navColorInput" value="#131720" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="navColorText" value="#131720" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Text Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="textColorInput" value="#f0f2f5" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="textColorText" value="#f0f2f5" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Text Secondary Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="textSecondaryColorInput" value="#8b92a7" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="textSecondaryColorText" value="#8b92a7" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Logo Icon Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="logoColorInput" value="#6366f1" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="logoColorText" value="#6366f1" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Logo Text Color</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="logoTextColorInput" value="#f0f2f5" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="logoTextColorText" value="#f0f2f5" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Background Tertiary</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="bgTertiaryColorInput" value="#1a1f2e" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="bgTertiaryColorText" value="#1a1f2e" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Card Background</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="bgCardColorInput" value="#1e2432" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="bgCardColorText" value="#1e2432" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Hover Background</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="bgHoverColorInput" value="#252b3b" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="bgHoverColorText" value="#252b3b" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Text Tertiary</label>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <input type="color" id="textTertiaryColorInput" value="#6b7280" style="width: 60px; height: 60px; min-width: 60px; flex-shrink: 0; border: none; border-radius: 6px; cursor: pointer;">
+                                            <input type="text" id="textTertiaryColorText" value="#6b7280" class="form-input" style="flex: 1; min-width: 0; font-family: monospace;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 24px; display: flex; gap: 12px;">
+                            <button class="btn-primary" id="saveCustomizationBtn">
+                                <i class="fas fa-save"></i>
+                                Save Customization
+                            </button>
+                            <button class="btn-secondary" id="resetCustomizationBtn">
+                                <i class="fas fa-undo"></i>
+                                Reset to Default
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Clear Logs Section -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <div>
+                                <h3 class="settings-section-title">Clear All Logs</h3>
+                                <p class="settings-section-desc">Permanently delete all log entries from the database. This action cannot be undone.</p>
+                            </div>
+                        </div>
+                        <div class="settings-card" style="margin-top: 16px;">
+                            <div style="padding: 16px; background: #1a1f2e; border-radius: 8px; border: 1px solid #ef444440;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <p style="margin: 0; color: #ef4444; font-size: 14px; font-weight: 600; margin-bottom: 4px;">
+                                            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                                            Warning: This will delete all log entries
+                                        </p>
+                                        <p style="margin: 0; color: #9ca3af; font-size: 13px;">
+                                            All stored syslog messages will be permanently removed. This action cannot be undone.
+                                        </p>
+                                    </div>
+                                    <button class="btn-danger" id="clearAllLogsBtn" style="margin-left: 20px;">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Clear All Logs
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login History Section -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <div>
+                                <h3 class="settings-section-title">Login History</h3>
+                                <p class="settings-section-desc">View recent login attempts and authentication activity</p>
+                            </div>
+                            <button class="btn-secondary" id="refreshLoginHistoryBtn">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                        <div class="settings-card" style="margin-top: 16px; overflow: hidden;">
+                            <div id="loginHistoryTable" class="login-history-table">
+                                <div class="login-history-loading" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+                                    Loading login history...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Export Section -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <div>
+                                <h3 class="settings-section-title">Configuration Export</h3>
+                                <p class="settings-section-desc">Export your current configuration as a JSON file for backup or migration</p>
+                            </div>
+                            <button class="btn-primary" id="exportConfigBtn">
+                                <i class="fas fa-download"></i>
+                                Export Configuration
+                            </button>
+                        </div>
+                        <div class="settings-card" style="margin-top: 16px;">
+                            <div style="padding: 16px; background: #1a1f2e; border-radius: 8px; border: 1px solid #2d3441;">
+                                <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.6;">
+                                    <i class="fas fa-info-circle" style="margin-right: 8px; color: #6366f1;"></i>
+                                    The exported configuration includes all listeners, devices, severity overrides, and custom views. 
+                                    This file can be imported on another instance or used as a backup.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Add Listener Wizard Modal -->
+    <div class="modal" id="addListenerModal">
+        <div class="modal-backdrop" onclick="closeListenerModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Create Syslog Listener</h2>
+                    <p class="modal-subtitle">Step <span id="listenerWizardStep">1</span> of <span id="listenerWizardTotal">3</span></p>
+                </div>
+                <button class="modal-close" onclick="closeListenerModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wizard-progress">
+                    <div class="wizard-step active" data-step="1">
+                        <div class="wizard-step-number">1</div>
+                        <div class="wizard-step-label">Basic Info</div>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <div class="wizard-step-number">2</div>
+                        <div class="wizard-step-label">Protocol</div>
+                    </div>
+                    <div class="wizard-step" data-step="3">
+                        <div class="wizard-step-number">3</div>
+                        <div class="wizard-step-label">Review</div>
+                    </div>
+                </div>
+                <div class="wizard-content">
+                    <!-- Step 1: Basic Info -->
+                    <div class="wizard-panel active" id="listenerStep1">
+                        <div class="form-group">
+                            <label class="form-label">Listener Name</label>
+                            <input type="text" id="listenerName" class="form-input" placeholder="e.g., Main UDP Listener" required>
+                            <small class="form-hint">A friendly name to identify this listener</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="listenerDescription" class="form-input" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Port</label>
+                            <input type="number" id="listenerPort" class="form-input" min="1" max="65535" placeholder="514" required>
+                            <small class="form-hint" id="listenerPortHint">Port must be unique and not overlap with other listeners</small>
+                        </div>
+                    </div>
+                    <!-- Step 2: Protocol Configuration -->
+                    <div class="wizard-panel" id="listenerStep2">
+                        <div class="form-group">
+                            <label class="form-label">Protocol</label>
+                            <select id="listenerProtocol" class="form-select" required>
+                                <option value="UDP">UDP (RFC5426)</option>
+                                <option value="TCP">TCP (RFC6587)</option>
+                                <option value="TLS">TLS (RFC5425)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="listenerFramingGroup" style="display: none;">
+                            <label class="form-label">Framing Type</label>
+                            <select id="listenerFraming" class="form-select">
+                                <option value="non-transparent">Non-Transparent Framing</option>
+                                <option value="octet-counting">Octet Counting</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Parser</label>
+                            <select id="listenerParser" class="form-select">
+                                <option value="RFC5424">RFC5424</option>
+                                <option value="RFC3164">RFC3164 (BSD-syslog)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="listenerTlsGroup" style="display: none;">
+                            <label class="form-label">Server Certificate</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="listenerCertFile" class="file-input" accept=".crt,.pem,.cer" onchange="handleCertUpload(this, 'cert')">
+                                <label for="listenerCertFile" class="file-upload-label">
+                                    <i class="fas fa-upload"></i>
+                                    <span id="listenerCertFileName">Choose certificate file (.crt, .pem, .cer)</span>
+                                </label>
+                                <small class="form-hint">Upload server certificate (PEM format). Required for TLS.</small>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <label class="form-label">Private Key</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="listenerKeyFile" class="file-input" accept=".key,.pem" onchange="handleCertUpload(this, 'key')">
+                                    <label for="listenerKeyFile" class="file-upload-label">
+                                        <i class="fas fa-upload"></i>
+                                        <span id="listenerKeyFileName">Choose private key file (.key, .pem)</span>
+                                    </label>
+                                    <small class="form-hint">Upload private key (PEM format). Required for TLS.</small>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <label class="form-label">CA Certificate (Optional)</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="listenerCaCertFile" class="file-input" accept=".crt,.pem,.cer" onchange="handleCertUpload(this, 'ca')">
+                                    <label for="listenerCaCertFile" class="file-upload-label">
+                                        <i class="fas fa-upload"></i>
+                                        <span id="listenerCaCertFileName">Choose CA certificate file (optional)</span>
+                                    </label>
+                                    <small class="form-hint">Optional: Upload CA certificate only if you want to validate client certificates (mutual TLS). The server certificate and key are sufficient for TLS operation.</small>
+                                </div>
+                            </div>
+                            <div class="cert-info" id="listenerCertInfo" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; border: 1px solid var(--border);">
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Certificate Information:</div>
+                                <div id="listenerCertDetails" style="font-size: 13px; color: var(--text-primary);"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Step 3: Review -->
+                    <div class="wizard-panel" id="listenerStep3">
+                        <div class="review-summary">
+                            <div class="review-item">
+                                <span class="review-label">Name:</span>
+                                <span class="review-value" id="reviewListenerName">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Port:</span>
+                                <span class="review-value" id="reviewListenerPort">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Protocol:</span>
+                                <span class="review-value" id="reviewListenerProtocol">-</span>
+                            </div>
+                            <div class="review-item" id="reviewListenerFraming" style="display: none;">
+                                <span class="review-label">Framing:</span>
+                                <span class="review-value" id="reviewListenerFramingValue">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Parser:</span>
+                                <span class="review-value" id="reviewListenerParser">-</span>
+                            </div>
+                            <div class="review-item" id="reviewListenerCert" style="display: none;">
+                                <span class="review-label">Certificate:</span>
+                                <span class="review-value" id="reviewListenerCertValue">-</span>
+                            </div>
+                            <div class="review-item" id="reviewListenerKey" style="display: none;">
+                                <span class="review-label">Private Key:</span>
+                                <span class="review-value" id="reviewListenerKeyValue">-</span>
+                            </div>
+                            <div class="review-item" id="reviewListenerCaCert" style="display: none;">
+                                <span class="review-label">CA Certificate:</span>
+                                <span class="review-value" id="reviewListenerCaCertValue">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="wizard-actions">
+                    <button class="btn-secondary" id="listenerWizardPrev" style="display: none;" onclick="listenerWizardPrev()">Previous</button>
+                    <button class="btn-secondary" onclick="closeListenerModal()">Cancel</button>
+                    <button class="btn-primary" id="listenerWizardNext" onclick="listenerWizardNext()">Next</button>
+                    <button class="btn-primary" id="listenerWizardSave" style="display: none;" onclick="saveListener()">Create Listener</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Device Wizard Modal -->
+    <div class="modal" id="addDeviceModal">
+        <div class="modal-backdrop" onclick="closeDeviceModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Add Device</h2>
+                    <p class="modal-subtitle">Step <span id="deviceWizardStep">1</span> of <span id="deviceWizardTotal">2</span></p>
+                </div>
+                <button class="modal-close" onclick="closeDeviceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wizard-progress">
+                    <div class="wizard-step active" data-step="1">
+                        <div class="wizard-step-number">1</div>
+                        <div class="wizard-step-label">Device Info</div>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <div class="wizard-step-number">2</div>
+                        <div class="wizard-step-label">IP Addresses</div>
+                    </div>
+                </div>
+                <div class="wizard-content">
+                    <!-- Step 1: Device Info -->
+                    <div class="wizard-panel active" id="deviceStep1">
+                        <div class="form-group">
+                            <label class="form-label">Device Name</label>
+                            <input type="text" id="deviceName" class="form-input" placeholder="e.g., Router-01, Switch-Main" required>
+                            <small class="form-hint">A friendly name to identify this device</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Device Type</label>
+                            <select id="deviceType" class="form-select" required>
+                                <option value="">Select device type...</option>
+                                <option value="generic">Generic (Default Parser)</option>
+                                <!-- Device types will be populated from API -->
+                            </select>
+                            <small class="form-hint">Select the device type for specialized parsing</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bind to Listener</label>
+                            <select id="deviceListener" class="form-select" required>
+                                <option value="">Select a listener...</option>
+                                <!-- Listeners will be populated from API -->
+                            </select>
+                            <small class="form-hint">Select which listener this device will use</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="deviceDescription" class="form-input" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                    </div>
+                    <!-- Step 2: IP Addresses -->
+                    <div class="wizard-panel" id="deviceStep2">
+                        <div class="form-group">
+                            <label class="form-label">IP Addresses</label>
+                            <div id="deviceIpList" class="ip-list">
+                                <!-- IP addresses will be added here -->
+                            </div>
+                            <div class="ip-input-group">
+                                <input type="text" id="deviceIpInput" class="form-input" placeholder="192.168.1.1" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+                                <button type="button" class="btn-secondary" onclick="addDeviceIp()">
+                                    <i class="fas fa-plus"></i>
+                                    Add IP
+                                </button>
+                            </div>
+                            <small class="form-hint">Add IP addresses that this device will send syslog from. Only messages from these IPs will be parsed for this device.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="wizard-actions">
+                    <button class="btn-secondary" id="deviceWizardPrev" style="display: none;" onclick="deviceWizardPrev()">Previous</button>
+                    <button class="btn-secondary" onclick="closeDeviceModal()">Cancel</button>
+                    <button class="btn-primary" id="deviceWizardNext" onclick="deviceWizardNext()">Next</button>
+                    <button class="btn-primary" id="deviceWizardSave" style="display: none;" onclick="saveDevice()">Add Device</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Log Detail Modal -->
@@ -441,6 +1273,161 @@
         </div>
     </div>
 
+    <!-- View Builder Modal -->
+    <div class="modal" id="viewBuilderModal">
+        <div class="modal-backdrop" onclick="closeViewBuilder()"></div>
+        <div class="modal-content" style="max-width: 95vw; max-height: 95vh; width: 1400px; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="viewBuilderTitle">Create Custom View</h2>
+                    <p class="modal-subtitle">Drag widgets from the sidebar to build your dashboard</p>
+                </div>
+                <button class="modal-close" onclick="closeViewBuilder()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="flex: 1; display: flex; overflow: hidden; gap: 20px;">
+                <!-- Widget Library Sidebar -->
+                <div class="widget-library" style="width: 250px; background: #1a1f2e; border-radius: 12px; padding: 20px; overflow-y: auto;">
+                    <h3 style="margin: 0 0 16px 0; color: #e4e7eb; font-size: 16px; font-weight: 600;">Widget Library</h3>
+                    <div class="widget-item" draggable="true" data-widget-type="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Stat Card</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="chart-severity">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Severity Chart</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="chart-protocol">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Protocol Chart</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="event-timeline">
+                        <i class="fas fa-stream"></i>
+                        <span>Event Timeline</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="chart-event-type">
+                        <i class="fas fa-chart-area"></i>
+                        <span>Event Type Chart</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="device-stats">
+                        <i class="fas fa-server"></i>
+                        <span>Device Stats</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="query-builder">
+                        <i class="fas fa-code"></i>
+                        <span>Query Builder</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="data-table">
+                        <i class="fas fa-table"></i>
+                        <span>Data Table</span>
+                    </div>
+                    <div class="widget-item" draggable="true" data-widget-type="top-n">
+                        <i class="fas fa-list-ol"></i>
+                        <span>Top N List</span>
+                    </div>
+                </div>
+
+                <!-- Canvas Area -->
+                <div class="view-canvas" id="viewCanvas" style="flex: 1; background: #0f1419; border-radius: 12px; padding: 20px; overflow-y: auto; position: relative;">
+                    <div id="viewCanvasGrid" class="canvas-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; min-height: 100%;">
+                        <div class="empty-canvas" style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #6b7280;">
+                            <i class="fas fa-mouse-pointer" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p style="font-size: 14px;">Drag widgets here to build your view</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 20px; border-top: 1px solid #2d3441; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <input type="text" id="viewNameInput" class="form-input" placeholder="View Name" style="width: 300px;">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-secondary" onclick="closeViewBuilder()">Cancel</button>
+                    <button class="btn-primary" id="saveViewBtn" onclick="saveView()">
+                        <i class="fas fa-save"></i>
+                        Save View
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Search Modal -->
+    <div class="advanced-search-modal" id="advancedSearchModal" style="display: none;">
+        <div class="advanced-search-backdrop"></div>
+        <div class="advanced-search-container">
+            <div class="advanced-search-header">
+                <input type="text" id="advancedSearchInput" class="advanced-search-input" placeholder="Search everything (Shift+Shift or Cmd/Ctrl+K)">
+                <button class="advanced-search-close" id="advancedSearchClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="advanced-search-results" id="advancedSearchResults">
+                <!-- Search results will be dynamically loaded here -->
+                <div class="advanced-search-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <p>Start typing to search across logs, devices, listeners, views, modules, and event types.</p>
+                    <p class="advanced-search-empty-hint">Use <kbd>↑</kbd><kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>Esc</kbd> to close.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget Configuration Modal -->
+    <div class="modal" id="widgetConfigModal" style="display: none;">
+        <div class="modal-backdrop" onclick="closeWidgetConfig()"></div>
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="widgetConfigTitle">Configure Widget</h2>
+                    <p class="modal-subtitle" id="widgetConfigSubtitle">Customize widget settings</p>
+                </div>
+                <button class="modal-close" onclick="closeWidgetConfig()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="widgetConfigBody" style="position: relative;">
+                <!-- Configuration form will be dynamically generated -->
+                <div id="query-autocomplete" style="position: absolute; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; box-shadow: var(--shadow-lg); margin-top: 4px; min-width: 250px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeWidgetConfig()">Cancel</button>
+                <button class="btn-primary" onclick="saveWidgetConfig()">
+                    <i class="fas fa-save"></i>
+                    Save Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core modules -->
+    <script src="utils.js"></script>
+    <script src="routing.js"></script>
+    <script src="navigation.js"></script>
+    <script src="filters.js"></script>
+    <script src="search.js"></script>
+    <script src="advanced-search.js"></script>
+    <script src="charts.js"></script>
+    <script src="refresh.js"></script>
+    
+    <!-- Feature modules -->
+    <script src="dashboard.js"></script>
+    <script src="logs.js"></script>
+    <script src="settings.js"></script>
+    <script src="listeners.js"></script>
+    <script src="devices.js"></script>
+    <script src="views.js"></script>
+    <script src="modules.js"></script>
+    <!-- eventtypes.js removed - functionality moved to filters.js -->
+    <script src="dropdown.js"></script>
+    <script src="calendar.js"></script>
+    <script src="auth.js"></script>
+    
+    <!-- Main app initialization -->
     <script src="app.js"></script>
 </body>
 </html>

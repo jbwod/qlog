@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared View - qLog</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body.shared-view {
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+        
+        .shared-view-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+        
+        .shared-view-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .shared-view-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .shared-view-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .shared-view-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .shared-view-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .shared-view-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .shared-view-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            max-width: 100%;
+        }
+        
+        .shared-view-widget {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .shared-view-widget-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .shared-view-widget-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .shared-view-widget-content {
+            flex: 1;
+            overflow: auto;
+        }
+        
+        .shared-view-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: var(--text-secondary);
+        }
+        
+        .shared-view-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: var(--error);
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .shared-view-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--info-light);
+            color: var(--info);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="shared-view">
+    <div class="shared-view-container">
+        <div class="shared-view-header">
+            <div class="shared-view-title">
+                <div>
+                    <h1 id="sharedViewTitle">Loading View...</h1>
+                    <p class="shared-view-subtitle" id="sharedViewSubtitle"></p>
+                </div>
+            </div>
+            <div class="shared-view-actions">
+                <span class="shared-view-badge">
+                    <i class="fas fa-lock"></i> Read-Only
+                </span>
+                <button class="btn-secondary btn-sm" onclick="refreshSharedView()" style="margin-left: 12px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+        
+        <div class="shared-view-content">
+            <div id="sharedViewLoading" class="shared-view-loading">
+                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px; color: var(--accent);"></i>
+                <p>Loading shared view...</p>
+            </div>
+            
+            <div id="sharedViewError" class="shared-view-error" style="display: none;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h2>View Not Found</h2>
+                <p id="sharedViewErrorMessage">The shared view you're looking for doesn't exist or has been removed.</p>
+            </div>
+            
+            <div id="sharedViewGrid" class="shared-view-grid" style="display: none;">
+                <!-- Widgets will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="shared-view.js"></script>
+</body>
+</html>
+

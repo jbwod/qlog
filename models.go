@@ -51,3 +51,27 @@ func (s *LogEntry) GetSeverityColor() string {
 	return severityColors[s.Severity]
 }
 
+// User represents a user account
+type User struct {
+	ID           int64  `json:"id"`
+	Username     string `json:"username"`
+	PasswordHash string `json:"-"` // Never serialize password hash
+	Role         string `json:"role"`
+}
+
+// Session represents an active user session
+type Session struct {
+	ID        string `json:"id"`
+	UserID    int64  `json:"user_id"`
+	IPAddress string `json:"ip_address,omitempty"`
+	ExpiresAt string `json:"expires_at"`
+}
+
+// LoginAttempt represents a login attempt (for audit logging)
+type LoginAttempt struct {
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	IPAddress string `json:"ip_address"`
+	Success   bool   `json:"success"`
+	CreatedAt string `json:"created_at"`
+}
